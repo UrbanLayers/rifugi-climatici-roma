@@ -425,11 +425,11 @@
           <span class="toggle-track"></span>
         </span>
       </div>
-      <div class="legend-row"><span class="legend-dot" style="background:#3A7CA5;">📚</span><span class="legend-label">Aule studio</span><span class="legend-count" id="lcount-Aule studio">–</span></div>
+      <div class="legend-row"><span class="legend-dot" style="background:#3A7CA5;">📚</span><span class="legend-label">Aule Studio</span><span class="legend-count" id="lcount-Aule Studio">–</span></div>
       <div class="legend-row"><span class="legend-dot" style="background:#2563A6;">🏛️</span><span class="legend-label">Biblioteche</span><span class="legend-count" id="lcount-Biblioteche">–</span></div>
-      <div class="legend-row"><span class="legend-dot" style="background:#1A5276;">🤝</span><span class="legend-label">Centri anziani</span><span class="legend-count" id="lcount-Centri anziani">–</span></div>
-      <div class="legend-row"><span class="legend-dot" style="background:#4A6FA5;">🏺</span><span class="legend-label">Musei gratuiti residenti</span><span class="legend-count" id="lcount-Musei gratuiti residenti">–</span></div>
-      <div class="legend-row"><span class="legend-dot" style="background:#5B84B1;">🎭</span><span class="legend-label">Centri culturali e poli civici</span><span class="legend-count" id="lcount-Centri culturali e poli civici">–</span></div>
+      <div class="legend-row"><span class="legend-dot" style="background:#1A5276;">🤝</span><span class="legend-label">Centri Anziani (CSAQ)</span><span class="legend-count" id="lcount-Centri Anziani (CSAQ)">–</span></div>
+      <div class="legend-row"><span class="legend-dot" style="background:#4A6FA5;">🏺</span><span class="legend-label">Musei Gratuiti Residenti</span><span class="legend-count" id="lcount-Musei Gratuiti Residenti">–</span></div>
+      <div class="legend-row"><span class="legend-dot" style="background:#5B84B1;">🎭</span><span class="legend-label">Centri Culturali e Poli Civici</span><span class="legend-count" id="lcount-Centri Culturali e Poli Civici">–</span></div>
     </div>
 
     <!-- ALL'APERTO -->
@@ -539,11 +539,11 @@ const LAYER_CONFIG = {
 
 // Colori e icone per sottotipi del layer Al chiuso
 const TIPO_STYLE = {
-  'Aule studio':                  { color: '#3A7CA5', emoji: '📚' },
-  'Biblioteche':                  { color: '#2563A6', emoji: '🏛️' },
-  'Centri anziani':               { color: '#1A5276', emoji: '🤝' },
-  'Musei gratuiti residenti':     { color: '#4A6FA5', emoji: '🏺' },
-  'Centri culturali e poli civici': { color: '#5B84B1', emoji: '🎭' },
+  'Aule Studio':                    { color: '#3A7CA5', emoji: '📚' },
+  'Biblioteche':                    { color: '#2563A6', emoji: '🏛️' },
+  'Centri Anziani (CSAQ)':          { color: '#1A5276', emoji: '🤝' },
+  'Musei Gratuiti Residenti':       { color: '#4A6FA5', emoji: '🏺' },
+  'Centri Culturali e Poli Civici': { color: '#5B84B1', emoji: '🎭' },
 };
 const TIPO_DEFAULT = { color: '#3A7CA5', emoji: '📍' };
 
@@ -555,9 +555,9 @@ const map = L.map('map', {
 });
 
 // Basemap OpenTopoMap
-L.tileLayer('https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png', {
-  attribution: '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors, © <a href="https://opentopomap.org">OpenTopoMap</a>',
-  maxZoom: 17,
+L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+  attribution: '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+  maxZoom: 19,
 }).addTo(map);
 
 // ── CONFINE COMUNALE ──────────────────────────────────────────────
