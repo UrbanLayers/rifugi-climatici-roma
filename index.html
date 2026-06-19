@@ -8,10 +8,7 @@
 <!-- Leaflet -->
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css"/>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
-<!-- GeoRaster per raster TIF -->
-<script src="https://cdnjs.cloudflare.com/ajax/libs/proj4/2.9.0/proj4.min.js"></script>
-<script src="https://unpkg.com/georaster@1.6.0/dist/georaster.browser.bundle.min.js"></script>
-<script src="https://unpkg.com/georaster-layer-for-leaflet@3.10.0/dist/georaster-layer-for-leaflet.min.js"></script>
+
 
 
 <style>
@@ -599,65 +596,6 @@
       </label>
     </div>
 
-    <!-- MAPPE TEMATICHE -->
-    <div class="sidebar-section" style="border-top: 2px solid var(--border);">
-      <div class="cat-header" style="margin-bottom:8px;">
-        <span style="flex:1;">Mappe tematiche</span>
-      </div>
-
-      <label class="layer-row active" id="row-hm">
-        <span class="layer-icon" style="background:#F5EEF8;">🌡️</span>
-        <span class="layer-name">Indice di raffrescamento urbano</span>
-        <span class="layer-count" id="count-hm">–</span>
-        <span class="toggle">
-          <input type="checkbox" id="tog-hm" checked onchange="toggleTematico('hm', this)">
-          <span class="toggle-track"></span>
-        </span>
-      </label>
-
-      <!-- Legenda Spectral raster -->
-      <div style="margin:4px 0 10px;">
-        <div style="display:flex;height:10px;border-radius:3px;overflow:hidden;margin-bottom:3px;">
-          <div style="flex:1;background:#9e0142;"></div>
-          <div style="flex:1;background:#d53e4f;"></div>
-          <div style="flex:1;background:#f46d43;"></div>
-          <div style="flex:1;background:#fdae61;"></div>
-          <div style="flex:1;background:#fee08b;"></div>
-          <div style="flex:1;background:#ffffbf;"></div>
-          <div style="flex:1;background:#e6f598;"></div>
-          <div style="flex:1;background:#abdda4;"></div>
-          <div style="flex:1;background:#66c2a5;"></div>
-          <div style="flex:1;background:#3288bd;"></div>
-          <div style="flex:1;background:#5e4fa2;"></div>
-        </div>
-        <div style="display:flex;justify-content:space-between;font-size:10px;color:var(--text-muted);">
-          <span>0 (basso)</span><span>1 (alto)</span>
-        </div>
-      </div>
-
-      <label class="layer-row active" id="row-areaintervento">
-        <span class="layer-icon" style="background:#FDEEEE;">🔴</span>
-        <span class="layer-name">Aree prioritarie intervento caldo</span>
-        <span class="layer-count" id="count-areaintervento">–</span>
-        <span class="toggle">
-          <input type="checkbox" id="tog-areaintervento" checked onchange="toggleTematico('areaintervento', this)">
-          <span class="toggle-track"></span>
-        </span>
-      </label>
-
-      <!-- Legenda area intervento -->
-      <div style="margin:4px 0 10px;">
-        <div style="display:flex;align-items:center;gap:6px;margin-bottom:4px;">
-          <div style="width:14px;height:14px;background:#8B0000;border-radius:2px;flex-shrink:0;"></div>
-          <span style="font-size:11px;color:var(--text-muted);">Priorità 1</span>
-        </div>
-        <div style="display:flex;align-items:center;gap:6px;">
-          <div style="width:14px;height:14px;background:#E57373;border-radius:2px;flex-shrink:0;"></div>
-          <span style="font-size:11px;color:var(--text-muted);">Priorità 2</span>
-        </div>
-      </div>
-    </div>
-
     <!-- CONFINI -->
     <div class="sidebar-section" style="--c-confini:#333;">
       <div class="cat-header" style="margin-bottom:8px;--c-current:#333;">
@@ -1168,126 +1106,6 @@ function togglePolyLayer(id, checkbox) {
   }
 }
 
-// ── SCALA SPECTRAL (11 classi, 0-1) ──────────────────────────────
-const SPECTRAL_COLORS = [
-  [158,  1, 66],
-  [213, 62, 79],
-  [244,109, 67],
-  [253,174, 97],
-  [254,224,139],
-  [255,255,191],
-  [230,245,152],
-  [171,221,164],
-  [102,194,165],
-  [ 50,136,189],
-  [ 94, 79,162],
-];
-
-function spectralColor(value) {
-  if (value === null || value === undefined || isNaN(value)) return null;
-  const idx = Math.min(Math.floor(value * SPECTRAL_COLORS.length), SPECTRAL_COLORS.length - 1);
-  const [r, g, b] = SPECTRAL_COLORS[idx];
-  return [r, g, b, 180]; // alpha 180/255 ≈ 0.7
-}
-
-// ── MAPPE TEMATICHE ───────────────────────────────────────────────
-const tematiciLayers = {};
-
-async function loadRaster() {
-  try {
-    const resp = await fetch('hm.tif');
-    if (!resp.ok) throw new Error('HTTP ' + resp.status);
-    const buffer = await resp.arrayBuffer();
-    const georaster = await parseGeoraster(buffer);
-
-    const layer = new GeoRasterLayer({
-      georaster,
-      opacity: 0.75,
-      pixelValuesToColorFn: values => {
-        const v = values[0];
-        if (v === georaster.noDataValue || v === null || isNaN(v)) return null;
-        const vClamped = Math.max(0, Math.min(1, v));
-        const c = spectralColor(vClamped);
-        if (!c) return null;
-        return `rgba(${c[0]},${c[1]},${c[2]},${(c[3]/255).toFixed(2)})`;
-      },
-      resolution: 256,
-    });
-
-    const group = L.layerGroup([layer]);
-    tematiciLayers['hm'] = group;
-    group.addTo(map);
-
-    const el = document.getElementById('count-hm');
-    if (el) el.textContent = '✓';
-
-  } catch(e) {
-    const el = document.getElementById('count-hm');
-    if (el) { el.textContent = '–'; el.title = 'File non trovato: hm.tif'; }
-    console.warn('Raster hm.tif non caricato:', e.message);
-  }
-}
-
-async function loadAreaIntervento() {
-  const group = L.layerGroup();
-  try {
-    const resp = await fetch('areaintervento.geojson');
-    if (!resp.ok) throw new Error('HTTP ' + resp.status);
-    const data = await resp.json();
-
-    let count = 0;
-    L.geoJSON(data, {
-      pane: 'poligoni',
-      style: function(feature) {
-        const v = feature.properties['layer'];
-        const fillColor = v === '1' ? '#8B0000' : '#E57373';
-        return {
-          fillColor,
-          fillOpacity: 0.65,
-          color: fillColor,
-          weight: 0.5,
-          opacity: 0.8,
-          pane: 'poligoni',
-        };
-      },
-      onEachFeature: function(feature, layer) {
-        const p = feature.properties;
-        const priorita = p['layer'] === '1' ? 'Priorità 1' : 'Priorità 2';
-        layer.bindPopup(
-          '<div class="popup-header">' +
-          '<div class="popup-tipo">Area prioritaria intervento caldo</div>' +
-          '<div class="popup-nome">' + priorita + '</div>' +
-          '</div>',
-          { maxWidth: 240 }
-        );
-        count++;
-      }
-    }).addTo(group);
-
-    const el = document.getElementById('count-areaintervento');
-    if (el) el.textContent = count;
-
-  } catch(e) {
-    const el = document.getElementById('count-areaintervento');
-    if (el) { el.textContent = '–'; el.title = 'File non trovato: areaintervento.geojson'; }
-    console.warn('areaintervento non caricato:', e.message);
-  }
-
-  tematiciLayers['areaintervento'] = group;
-  group.addTo(map);
-}
-
-function toggleTematico(id, checkbox) {
-  const row = document.getElementById('row-' + id);
-  if (checkbox.checked) {
-    if (tematiciLayers[id]) map.addLayer(tematiciLayers[id]);
-    if (row) row.classList.add('active');
-  } else {
-    if (tematiciLayers[id]) map.removeLayer(tematiciLayers[id]);
-    if (row) row.classList.remove('active');
-  }
-}
-
 // ── CONFINI AMMINISTRATIVI ───────────────────────────────────────
 const confineLayers = {};
 
@@ -1359,8 +1177,6 @@ function toggleConfine(id, checkbox) {
 async function init() {
   const promises = [
     loadBoundary(),
-    loadRaster(),
-    loadAreaIntervento(),
     loadRifugiChiuso(),
     ...Object.keys(POLY_CONFIG).map(id => loadPolyLayer(id)),
     ...Object.keys(LAYER_CONFIG).map(id => loadLayer(id)),
