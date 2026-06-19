@@ -483,20 +483,20 @@
 
       <label class="layer-row active" id="row-parchi_pubblici">
         <span class="layer-icon" style="background:#EBF5EF;">🌳</span>
-        <span class="layer-name">Parchi pubblici</span>
+        <span class="layer-name">Parchi Pubblici<br><small style="font-weight:400;color:var(--text-muted);">indice di raffrescamento</small></span>
         <span class="layer-count" id="count-parchi_pubblici">–</span>
         <span class="toggle">
-          <input type="checkbox" id="tog-parchi_pubblici" checked onchange="toggleLayer('parchi_pubblici', this)">
+          <input type="checkbox" id="tog-parchi_pubblici" checked onchange="togglePolyLayer('parchi_pubblici', this)">
           <span class="toggle-track"></span>
         </span>
       </label>
 
       <label class="layer-row active" id="row-parchi_affaccio">
         <span class="layer-icon" style="background:#EBF5EF;">🌊</span>
-        <span class="layer-name">Parchi d'affaccio</span>
+        <span class="layer-name">Parchi di Affaccio<br><small style="font-weight:400;color:var(--text-muted);">indice di raffrescamento</small></span>
         <span class="layer-count" id="count-parchi_affaccio">–</span>
         <span class="toggle">
-          <input type="checkbox" id="tog-parchi_affaccio" checked onchange="toggleLayer('parchi_affaccio', this)">
+          <input type="checkbox" id="tog-parchi_affaccio" checked onchange="togglePolyLayer('parchi_affaccio', this)">
           <span class="toggle-track"></span>
         </span>
       </label>
@@ -520,6 +520,25 @@
           <span class="toggle-track"></span>
         </span>
       </label>
+
+      <!-- Legenda YlGnBu -->
+      <div style="margin-top:10px;padding:8px 0 4px;">
+        <div style="font-size:10px;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:var(--text-muted);margin-bottom:6px;">Indice di raffrescamento</div>
+        <div style="display:flex;height:12px;border-radius:3px;overflow:hidden;margin-bottom:4px;">
+          <div style="flex:1;background:#ffffd9;"></div>
+          <div style="flex:1;background:#edf8b1;"></div>
+          <div style="flex:1;background:#c7e9b4;"></div>
+          <div style="flex:1;background:#7fcdbb;"></div>
+          <div style="flex:1;background:#41b6c4;"></div>
+          <div style="flex:1;background:#1d91c0;"></div>
+          <div style="flex:1;background:#225ea8;"></div>
+          <div style="flex:1;background:#253494;"></div>
+          <div style="flex:1;background:#081d58;"></div>
+        </div>
+        <div style="display:flex;justify-content:space-between;font-size:10px;color:var(--text-muted);">
+          <span>0 (basso)</span><span>1 (alto)</span>
+        </div>
+      </div>
     </div>
 
     <!-- SFD -->
@@ -573,8 +592,6 @@
 // ── CONFIGURAZIONE LAYER ──────────────────────────────────────────
 // Layer semplici: file GeoJSON, colore marker, emoji icona
 const LAYER_CONFIG = {
-  parchi_pubblici:  { file: 'parchi_pubblici.geojson',  color: '#4E9E6A', emoji: '🌳', label: 'Parchi pubblici' },
-  parchi_affaccio:  { file: 'parchi_affaccio.geojson',  color: '#2E7D52', emoji: '🌊', label: "Parchi d'affaccio" },
   spiagge:          { file: 'spiagge.geojson',           color: '#27AE60', emoji: '🏖️', label: 'Spiagge libere' },
   piscine:          { file: 'piscine.geojson',           color: '#1ABC9C', emoji: '🏊', label: 'Piscine gratuite' },
   sfd:              { file: 'sfd.geojson',               color: '#8C5FA8', emoji: '🏠', label: 'Strutture per persone senza fissa dimora' },
@@ -582,7 +599,34 @@ const LAYER_CONFIG = {
   fontanelle:       { file: 'fontanelle.geojson',       color: '#0E86A0', emoji: '⛲', label: 'Fontanelle' },
 };
 
+// Layer poligonali con coropleta
+const POLY_CONFIG = {
+  parchi_pubblici: { file: 'ParchiPubblici.geojson', campo: '_mean',  label: 'Parchi Pubblici' },
+  parchi_affaccio: { file: 'ParchiAffaccio.geojson', campo: '1mean',  label: "Parchi di Affaccio" },
+};
+
 // Colori e icone per sottotipi del layer Al chiuso
+// ── SCALA YLGNBU (9 classi, 0-1) ────────────────────────────────
+const YLGNBU = [
+  { max: 0.111, color: '#ffffd9' },
+  { max: 0.222, color: '#edf8b1' },
+  { max: 0.333, color: '#c7e9b4' },
+  { max: 0.444, color: '#7fcdbb' },
+  { max: 0.556, color: '#41b6c4' },
+  { max: 0.667, color: '#1d91c0' },
+  { max: 0.778, color: '#225ea8' },
+  { max: 0.889, color: '#253494' },
+  { max: 1.001, color: '#081d58' },
+];
+
+function getYlGnBu(value) {
+  if (value === null || value === undefined || isNaN(value)) return '#cccccc';
+  for (const cls of YLGNBU) {
+    if (value <= cls.max) return cls.color;
+  }
+  return '#081d58';
+}
+
 const TIPO_STYLE = {
   'Aule Studio':                    { color: '#3A7CA5', emoji: '📚' },
   'Biblioteche':                    { color: '#2563A6', emoji: '🏛️' },
@@ -924,11 +968,78 @@ function toggleTipo(tipo, checkbox) {
   }
 }
 
+// ── LAYER POLIGONALI COROPLETA ───────────────────────────────────
+const polyLayers = {};
+
+async function loadPolyLayer(id) {
+  const cfg = POLY_CONFIG[id];
+  const group = L.layerGroup();
+
+  try {
+    const resp = await fetch(cfg.file);
+    if (!resp.ok) throw new Error('HTTP ' + resp.status);
+    const data = await resp.json();
+
+    let count = 0;
+    L.geoJSON(data, {
+      style: function(feature) {
+        const v = feature.properties[cfg.campo];
+        const vNum = (v !== null && v !== undefined) ? parseFloat(v) : NaN;
+        return {
+          fillColor: getYlGnBu(isNaN(vNum) ? null : vNum),
+          fillOpacity: 0.75,
+          color: '#555',
+          weight: 0.5,
+          opacity: 0.6,
+        };
+      },
+      onEachFeature: function(feature, layer) {
+        const p = feature.properties;
+        const vRaw = p[cfg.campo];
+        const vNum = parseFloat(vRaw);
+        const vStr = isNaN(vNum) ? 'n.d.' : vNum.toFixed(3);
+        layer.bindPopup(
+          '<div class="popup-header"><div class="popup-tipo">' + cfg.label + '</div>' +
+          '<div class="popup-nome">' + (val(p.Nome) || val(p.name) || val(p.NOME) || cfg.label) + '</div></div>' +
+          '<div class="popup-body"><div class="popup-row"><span class="popup-icon">🌡️</span>' +
+          '<div><span class="popup-label">Indice raffrescamento</span><br>' +
+          '<span class="popup-val">' + vStr + '</span></div></div></div>',
+          { maxWidth: 280 }
+        );
+        count++;
+      }
+    }).addTo(group);
+
+    const el = document.getElementById('count-' + id);
+    if (el) el.textContent = count;
+
+  } catch(e) {
+    const el = document.getElementById('count-' + id);
+    if (el) { el.textContent = '–'; el.title = 'File non trovato: ' + cfg.file; }
+    console.warn('Layer ' + id + ' non caricato:', e.message);
+  }
+
+  polyLayers[id] = group;
+  group.addTo(map);
+}
+
+function togglePolyLayer(id, checkbox) {
+  const row = document.getElementById('row-' + id);
+  if (checkbox.checked) {
+    if (polyLayers[id]) map.addLayer(polyLayers[id]);
+    if (row) row.classList.add('active');
+  } else {
+    if (polyLayers[id]) map.removeLayer(polyLayers[id]);
+    if (row) row.classList.remove('active');
+  }
+}
+
 // ── INIT ──────────────────────────────────────────────────────────
 async function init() {
   const promises = [
     loadBoundary(),
     loadRifugiChiuso(),
+    ...Object.keys(POLY_CONFIG).map(id => loadPolyLayer(id)),
     ...Object.keys(LAYER_CONFIG).map(id => loadLayer(id)),
   ];
   await Promise.allSettled(promises);
