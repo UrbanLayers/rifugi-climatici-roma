@@ -8,10 +8,7 @@
 <!-- Leaflet -->
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css"/>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
-<!-- Leaflet.markercluster -->
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet.markercluster/1.5.3/MarkerCluster.css"/>
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet.markercluster/1.5.3/MarkerCluster.Default.css"/>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet.markercluster/1.5.3/leaflet.markercluster.min.js"></script>
+
 
 <style>
   /* ── TOKENS ────────────────────────────────────────────────── */
@@ -392,6 +389,22 @@
     line-height: 1.4;
   }
 
+  /* ── ETICHETTE MUNICIPI ─────────────────────────────────────── */
+  .municipio-label {
+    background: transparent;
+    border: none;
+    box-shadow: none;
+    font-size: 9px;
+    font-weight: 700;
+    color: #333;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    white-space: nowrap;
+    pointer-events: none;
+  }
+
+  .municipio-label::before { display: none; }
+
   /* ── RESPONSIVE ──────────────────────────────────────────────── */
   @media (max-width: 600px) {
     .sidebar { width: 100%; position: absolute; bottom: 0; left: 0; z-index: 500;
@@ -424,10 +437,6 @@
       <div class="cat-header" style="margin-bottom:8px;">
         <span style="flex:1;">Al chiuso</span>
         <span class="layer-count" id="count-rifugi_chiuso">–</span>
-        <span class="toggle" style="margin-left:8px;">
-          <input type="checkbox" id="tog-rifugi_chiuso" checked onchange="toggleGruppo(this)">
-          <span class="toggle-track"></span>
-        </span>
       </div>
 
       <label class="layer-row active" id="row-tipo-AuleStudio">
@@ -505,6 +514,25 @@
         </span>
       </label>
 
+      <!-- Legenda YlGnBu -->
+      <div style="margin:8px 0 12px;">
+        <div style="font-size:10px;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:var(--text-muted);margin-bottom:5px;">Indice di raffrescamento</div>
+        <div style="display:flex;height:10px;border-radius:3px;overflow:hidden;margin-bottom:3px;">
+          <div style="flex:1;background:#ffffd9;"></div>
+          <div style="flex:1;background:#edf8b1;"></div>
+          <div style="flex:1;background:#c7e9b4;"></div>
+          <div style="flex:1;background:#7fcdbb;"></div>
+          <div style="flex:1;background:#41b6c4;"></div>
+          <div style="flex:1;background:#1d91c0;"></div>
+          <div style="flex:1;background:#225ea8;"></div>
+          <div style="flex:1;background:#253494;"></div>
+          <div style="flex:1;background:#081d58;"></div>
+        </div>
+        <div style="display:flex;justify-content:space-between;font-size:10px;color:var(--text-muted);">
+          <span>0 (basso)</span><span>1 (alto)</span>
+        </div>
+      </div>
+
       <label class="layer-row active" id="row-spiagge">
         <span class="layer-icon" style="background:#EBF5EF;">🏖️</span>
         <span class="layer-name">Spiagge libere</span>
@@ -525,24 +553,6 @@
         </span>
       </label>
 
-      <!-- Legenda YlGnBu -->
-      <div style="margin-top:10px;padding:8px 0 4px;">
-        <div style="font-size:10px;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:var(--text-muted);margin-bottom:6px;">Indice di raffrescamento</div>
-        <div style="display:flex;height:12px;border-radius:3px;overflow:hidden;margin-bottom:4px;">
-          <div style="flex:1;background:#ffffd9;"></div>
-          <div style="flex:1;background:#edf8b1;"></div>
-          <div style="flex:1;background:#c7e9b4;"></div>
-          <div style="flex:1;background:#7fcdbb;"></div>
-          <div style="flex:1;background:#41b6c4;"></div>
-          <div style="flex:1;background:#1d91c0;"></div>
-          <div style="flex:1;background:#225ea8;"></div>
-          <div style="flex:1;background:#253494;"></div>
-          <div style="flex:1;background:#081d58;"></div>
-        </div>
-        <div style="display:flex;justify-content:space-between;font-size:10px;color:var(--text-muted);">
-          <span>0 (basso)</span><span>1 (alto)</span>
-        </div>
-      </div>
     </div>
 
     <!-- SFD -->
@@ -580,6 +590,33 @@
         <span class="layer-count" id="count-fontanelle">–</span>
         <span class="toggle">
           <input type="checkbox" id="tog-fontanelle" checked onchange="toggleLayer('fontanelle', this)">
+          <span class="toggle-track"></span>
+        </span>
+      </label>
+    </div>
+
+    <!-- CONFINI -->
+    <div class="sidebar-section" style="--c-confini:#333;">
+      <div class="cat-header" style="margin-bottom:8px;--c-current:#333;">
+        <span style="flex:1;">Confini amministrativi</span>
+      </div>
+
+      <label class="layer-row active" id="row-comune">
+        <span class="layer-icon" style="background:#F0F0F0;">🗺️</span>
+        <span class="layer-name">Comune di Roma</span>
+        <span class="layer-count" id="count-comune">–</span>
+        <span class="toggle">
+          <input type="checkbox" id="tog-comune" checked onchange="toggleConfine('comune', this)">
+          <span class="toggle-track"></span>
+        </span>
+      </label>
+
+      <label class="layer-row active" id="row-municipi">
+        <span class="layer-icon" style="background:#F0F0F0;">📍</span>
+        <span class="layer-name">Municipi</span>
+        <span class="layer-count" id="count-municipi">–</span>
+        <span class="toggle">
+          <input type="checkbox" id="tog-municipi" checked onchange="toggleConfine('municipi', this)">
           <span class="toggle-track"></span>
         </span>
       </label>
@@ -716,6 +753,23 @@ const layers = {};   // id → L.LayerGroup
 const loaded = {};   // id → bool
 
 // ── MARKER ────────────────────────────────────────────────────────
+// Icona punto piccolo (per fontanelle e casette acqua)
+function makeSmallIcon(color, size) {
+  return L.divIcon({
+    className: '',
+    html: `<div style="
+      width:${size}px; height:${size}px;
+      background:${color};
+      border-radius:50%;
+      border:1.5px solid rgba(255,255,255,0.8);
+      box-shadow:0 1px 3px rgba(0,0,0,0.3);
+    "></div>`,
+    iconSize: [size, size],
+    iconAnchor: [size/2, size/2],
+    popupAnchor: [0, -size/2 - 2],
+  });
+}
+
 function makeIcon(cfg, size) {
   const s = size || 30;
   const fs = Math.round(s * 0.47);
@@ -823,44 +877,15 @@ function buildPopup(p) {
   `;
 }
 
-// Layer che usano clustering
-const CLUSTER_LAYERS = ['fontanelle', 'casette_acqua'];
+// Layer con icona piccola (punti, senza emoji)
+const SMALL_LAYERS = { fontanelle: 6, casette_acqua: 10 };
 
 // ── CARICAMENTO GEOJSON (layer semplici) ──────────────────────────
 async function loadLayer(id) {
   const cfg = LAYER_CONFIG[id];
-  const useCluster = CLUSTER_LAYERS.includes(id);
-
-  // dimensione marker ridotta per infrastrutture
-  const markerSize = useCluster ? 14 : 30;
-  const icon = makeIcon(cfg, markerSize);
-
-  // gruppo normale o cluster
-  const group = useCluster
-    ? L.markerClusterGroup({
-        maxClusterRadius: 40,
-        spiderfyOnMaxZoom: true,
-        showCoverageOnHover: false,
-        zoomToBoundsOnClick: true,
-        iconCreateFunction: function(cluster) {
-          const n = cluster.getChildCount();
-          return L.divIcon({
-            className: '',
-            html: `<div style="
-              width:32px; height:32px;
-              background:${cfg.color};
-              border:2px solid rgba(255,255,255,0.9);
-              border-radius:50%;
-              display:flex; align-items:center; justify-content:center;
-              font-size:11px; font-weight:700; color:#fff;
-              box-shadow:0 2px 6px rgba(0,0,0,0.3);
-            ">${n}</div>`,
-            iconSize: [32, 32],
-            iconAnchor: [16, 16],
-          });
-        }
-      })
-    : L.layerGroup();
+  const group = L.layerGroup();
+  const smallSize = SMALL_LAYERS[id];
+  const icon = smallSize ? makeSmallIcon(cfg.color, smallSize) : makeIcon(cfg);
 
   try {
     const resp = await fetch(cfg.file);
@@ -886,7 +911,7 @@ async function loadLayer(id) {
 
       if (!lat || !lon || isNaN(lat) || isNaN(lon)) return;
 
-      const marker = L.marker([lat, lon], { icon, pane: useCluster ? undefined : 'marcatori' })
+      const marker = L.marker([lat, lon], { icon, pane: 'marcatori' })
         .bindPopup(buildPopup(p), { maxWidth: 320 });
       group.addLayer(marker);
       count++;
@@ -1080,6 +1105,73 @@ function togglePolyLayer(id, checkbox) {
   }
 }
 
+// ── CONFINI AMMINISTRATIVI ───────────────────────────────────────
+const confineLayers = {};
+
+const CONFINE_CONFIG = {
+  comune:   { file: 'Comune.geojson',   color: '#111', weight: 2,   dash: null,  label: 'Comune' },
+  municipi: { file: 'Municipi.geojson', color: '#444', weight: 1,   dash: '4 3', label: 'Municipio' },
+};
+
+async function loadConfine(id) {
+  const cfg = CONFINE_CONFIG[id];
+  const group = L.layerGroup();
+
+  try {
+    const resp = await fetch(cfg.file);
+    if (!resp.ok) throw new Error('HTTP ' + resp.status);
+    const data = await resp.json();
+
+    let count = 0;
+    L.geoJSON(data, {
+      style: {
+        color: cfg.color,
+        weight: cfg.weight,
+        opacity: 0.85,
+        fill: false,
+        dashArray: cfg.dash,
+      },
+      onEachFeature: function(feature, layer) {
+        const p = feature.properties || {};
+        // etichetta per municipi
+        if (id === 'municipi') {
+          const nome = val(p.Nome) || val(p.NOME) || val(p.name) || val(p.NAME) || val(p.municipio) || val(p.MUNICIPIO) || '';
+          if (nome) {
+            layer.bindTooltip(nome, {
+              permanent: true,
+              direction: 'center',
+              className: 'municipio-label',
+            });
+          }
+        }
+        count++;
+      }
+    }).addTo(group);
+
+    const el = document.getElementById('count-' + id);
+    if (el) el.textContent = count;
+
+  } catch(e) {
+    const el = document.getElementById('count-' + id);
+    if (el) { el.textContent = '–'; el.title = 'File non trovato: ' + cfg.file; }
+    console.warn('Confine ' + id + ' non caricato:', e.message);
+  }
+
+  confineLayers[id] = group;
+  group.addTo(map);
+}
+
+function toggleConfine(id, checkbox) {
+  const row = document.getElementById('row-' + id);
+  if (checkbox.checked) {
+    if (confineLayers[id]) map.addLayer(confineLayers[id]);
+    if (row) row.classList.add('active');
+  } else {
+    if (confineLayers[id]) map.removeLayer(confineLayers[id]);
+    if (row) row.classList.remove('active');
+  }
+}
+
 // ── INIT ──────────────────────────────────────────────────────────
 async function init() {
   const promises = [
@@ -1087,6 +1179,7 @@ async function init() {
     loadRifugiChiuso(),
     ...Object.keys(POLY_CONFIG).map(id => loadPolyLayer(id)),
     ...Object.keys(LAYER_CONFIG).map(id => loadLayer(id)),
+    ...Object.keys(CONFINE_CONFIG).map(id => loadConfine(id)),
   ];
   await Promise.allSettled(promises);
   document.getElementById('loading').style.display = 'none';
