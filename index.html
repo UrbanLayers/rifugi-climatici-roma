@@ -442,7 +442,7 @@
       </div>
 
       <label class="layer-row active" id="row-tipo-CentriAnziani">
-        <span class="layer-icon svg-icon" style="background:#1A5276;">
+        <span class="layer-icon svg-icon" style="background:#E07B39;">
           <svg viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg" width="14" height="14">
             <circle cx="10" cy="7" r="3.5" stroke="white" stroke-width="1.5"/>
             <path d="M3 17c0-3.866 3.134-7 7-7s7 3.134 7 7" stroke="white" stroke-width="1.5" stroke-linecap="round"/>
@@ -458,7 +458,7 @@
       </label>
 
       <label class="layer-row active" id="row-tipo-Biblioteche">
-        <span class="layer-icon svg-icon" style="background:#2563A6;">
+        <span class="layer-icon svg-icon" style="background:#C1440E;">
           <svg viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg" width="14" height="14">
             <rect x="3" y="4" width="4" height="13" rx="0.5" stroke="white" stroke-width="1.5"/>
             <rect x="8" y="4" width="4" height="13" rx="0.5" stroke="white" stroke-width="1.5"/>
@@ -474,7 +474,7 @@
       </label>
 
       <label class="layer-row active" id="row-tipo-AuleStudio">
-        <span class="layer-icon svg-icon" style="background:#3A7CA5;">
+        <span class="layer-icon svg-icon" style="background:#2D6A9F;">
           <svg viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg" width="14" height="14">
             <path d="M4 5h12M4 8h8M4 11h10M4 14h6" stroke="white" stroke-width="1.5" stroke-linecap="round"/>
             <path d="M15 11l2 2-2 2" stroke="white" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/>
@@ -489,7 +489,7 @@
       </label>
 
       <label class="layer-row active" id="row-tipo-Musei">
-        <span class="layer-icon svg-icon" style="background:#4A6FA5;">
+        <span class="layer-icon svg-icon" style="background:#6B4F9E;">
           <svg viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg" width="14" height="14">
             <path d="M10 3L2 7h16L10 3z" stroke="white" stroke-width="1.5" stroke-linejoin="round"/>
             <rect x="3" y="7" width="2" height="8" fill="white"/>
@@ -507,7 +507,7 @@
       </label>
 
       <label class="layer-row active" id="row-tipo-CentriCulturali">
-        <span class="layer-icon svg-icon" style="background:#5B84B1;">
+        <span class="layer-icon svg-icon" style="background:#2A9D8F;">
           <svg viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg" width="14" height="14">
             <circle cx="10" cy="10" r="7" stroke="white" stroke-width="1.5"/>
             <path d="M8 7l5 3-5 3V7z" fill="white"/>
@@ -578,7 +578,7 @@
       </div>
 
       <label class="layer-row active" id="row-spiagge">
-        <span class="layer-icon svg-icon" style="background:#27AE60;">
+        <span class="layer-icon svg-icon" style="background:#F4A261;">
           <svg viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg" width="14" height="14">
             <path d="M2 14c2-3 5-3 7 0s5 3 7 0" stroke="white" stroke-width="1.5" stroke-linecap="round"/>
             <path d="M2 17c2-2 5-2 7 0s5 2 7 0" stroke="white" stroke-width="1.2" stroke-linecap="round"/>
@@ -597,7 +597,10 @@
 
     <!-- SFD -->
     <div class="sidebar-section cat-sfd">
-      <div class="cat-header">Rifugi per persone senza fissa dimora</div>
+      <div class="cat-header" style="margin-bottom:8px;">
+        <span style="flex:1;">Rifugi per persone senza dimora</span>
+        <span class="layer-count" id="count-gruppo-sfd">–</span>
+      </div>
 
       <label class="layer-row active" id="row-sfd">
         <span class="layer-icon svg-icon" style="background:#8C5FA8;">
@@ -607,7 +610,7 @@
             <rect x="8" y="13" width="4" height="4" rx="0.5" stroke="white" stroke-width="1.2"/>
           </svg>
         </span>
-        <span class="layer-name">Strutture per persone senza fissa dimora</span>
+        <span class="layer-name">Strutture per persone senza dimora</span>
         <span class="layer-count" id="count-sfd">–</span>
         <span class="toggle">
           <input type="checkbox" id="tog-sfd" checked onchange="toggleLayer('sfd', this)">
@@ -618,7 +621,10 @@
 
     <!-- INFRASTRUTTURE -->
     <div class="sidebar-section cat-infra">
-      <div class="cat-header">Infrastrutture rinfrescanti</div>
+      <div class="cat-header" style="margin-bottom:8px;">
+        <span style="flex:1;">Infrastrutture rinfrescanti</span>
+        <span class="layer-count" id="count-gruppo-infra">–</span>
+      </div>
 
       <label class="layer-row active" id="row-casette_acqua">
         <span class="layer-icon svg-icon" style="background:#2196A6;">
@@ -662,7 +668,7 @@
             <path d="M13 7v4M10 9h3" stroke="white" stroke-width="1.2" stroke-linecap="round"/>
           </svg>
         </span>
-        <span class="layer-name">Piscine over 70</span>
+        <span class="layer-name">Piscine gratuite per over 70</span>
         <span class="layer-count" id="count-piscine">–</span>
         <span class="toggle">
           <input type="checkbox" id="tog-piscine" checked onchange="toggleLayer('piscine', this)">
@@ -719,7 +725,7 @@
 const LAYER_CONFIG = {
   spiagge:          { file: 'spiagge.geojson',           color: '#27AE60', emoji: '🏖️', label: 'Spiagge libere' },
   piscine:          { file: 'piscine.geojson',           color: '#1ABC9C', emoji: '🏊', label: 'Piscine gratuite' },
-  sfd:              { file: 'sfd.geojson',               color: '#8C5FA8', emoji: '🏠', label: 'Strutture per persone senza fissa dimora' },
+  sfd:              { file: 'sfd.geojson',               color: '#8C5FA8', emoji: '🏠', label: 'Strutture per persone senza dimora' },
   casette_acqua:    { file: 'casette_acqua.geojson',    color: '#2196A6', emoji: '💧', label: "Casette dell'acqua" },
   fontanelle:       { file: 'fontanelle.geojson',       color: '#0E86A0', emoji: '⛲', label: 'Fontanelle' },
 };
@@ -837,17 +843,50 @@ const layers = {};   // id → L.LayerGroup
 const loaded = {};   // id → bool
 
 // ── MARKER ────────────────────────────────────────────────────────
-// Icona punto piccolo (per fontanelle e casette acqua)
+// ── ICONE PIN ────────────────────────────────────────────────────
+// Ogni categoria ha il suo SVG pin pre-generato
+const PIN_SVGS = {
+  'Centri Anziani (CSAQ)':          makePinSVG('E07B39','FAD4B8','<circle cx="0" cy="-5" r="3" stroke-width="1.5"/><path d="M-6 6c0-3.314 2.686-6 6-6s6 2.686 6 6"/><path d="M-4 3c1 1 2 2 4 1"/>'),
+  'Biblioteche':                    makePinSVG('C1440E','F5B8A0','<path d="M-5 -7h10v14h-10z" stroke-width="1.5"/><path d="M-5 -7 0 -4 5 -7"/><line x1="0" y1="-4" x2="0" y2="7"/><line x1="-3" y1="0" x2="3" y2="0"/>'),
+  'Aule Studio':                    makePinSVG('2D6A9F','B3CDE8','<rect x="-6" y="-6" width="12" height="14" rx="1" stroke-width="1.5"/><line x1="-3" y1="-2" x2="3" y2="-2"/><line x1="-3" y1="1" x2="5" y2="1"/><line x1="-3" y1="4" x2="1" y2="4"/><path d="M4 3l2 2-2 2" stroke-width="1.2"/>'),
+  'Musei Gratuiti Residenti':       makePinSVG('6B4F9E','CFC0E8','<path d="M-7 -2h14"/><path d="M-6 -6l6 -3 6 3"/><rect x="-5" y="-2" width="3" height="8" fill="none"/><rect x="-1.5" y="-2" width="3" height="8" fill="none"/><rect x="2" y="-2" width="3" height="8" fill="none"/><line x1="-7" y1="6" x2="7" y2="6"/>'),
+  'Centri Culturali e Poli Civici': makePinSVG('2A9D8F','A8E0DA','<circle cx="-5" cy="-4" r="1.5" fill="#A8E0DA" stroke="none"/><circle cx="5" cy="-4" r="1.5" fill="#A8E0DA" stroke="none"/><circle cx="0" cy="4" r="1.5" fill="#A8E0DA" stroke="none"/><circle cx="-6" cy="2" r="1.5" fill="#A8E0DA" stroke="none"/><circle cx="6" cy="2" r="1.5" fill="#A8E0DA" stroke="none"/><line x1="-5" y1="-4" x2="5" y2="-4"/><line x1="-5" y1="-4" x2="0" y2="4"/><line x1="5" y1="-4" x2="0" y2="4"/><line x1="-6" y1="2" x2="6" y2="2"/><line x1="-6" y1="2" x2="-5" y2="-4"/><line x1="6" y1="2" x2="5" y2="-4"/>'),
+};
+
+const PIN_SVGS_LAYER = {
+  parchi_pubblici: makePinSVG('4E9E6A','B8E0C8','<path d="M0 -8c-4 0-6 3-6 6 0 2.5 2 4.5 4 5.5V7h4v-3.5c2-1 4-3 4-5.5 0-3-2-6-6-6z"/>'),
+  parchi_affaccio: makePinSVG('1A7ABF','A8D4F0','<path d="M0 -8c-4 0-6 3-6 6 0 2.5 2 4 4 5V5h4v-2c2-1 4-2.5 4-5 0-3-2-6-6-6z"/><path d="M-7 7c2-2 4-1 7 1s5-1 7-1" stroke-width="1.3"/>'),
+  spiagge:         makePinSVG('F4A261','FDE0C0','<circle cx="0" cy="-4" r="3.5"/><path d="M-7 4c2-2 4-1 7 1s5-1 7-1"/><path d="M-7 7c2-2 4-1 7 1s5-1 7-1" stroke-width="1.2"/>'),
+  sfd:             makePinSVG('8C5FA8','D4C0E8','<path d="M-7 2L0 -6l7 8"/><path d="M-5 1v7h10V1"/><rect x="-2" y="4" width="4" height="4" stroke-width="1.2"/>'),
+  casette_acqua:   makePinSVG('0096C7','A0DCF0','<path d="M0 -8c0 0-6 7-6 11a6 6 0 0 0 12 0c0-4-6-11-6-11z"/>'),
+  fontanelle:      makePinSVG('48CAE4','C8F0F8','<line x1="0" y1="-7" x2="0" y2="2"/><path d="M-4 -4c0 0 2-2 4 0"/><line x1="-5" y1="2" x2="5" y2="2"/><path d="M-3 2c0 2-1 4-1 4h8s-1-2-1-4" stroke-width="1.2"/>'),
+  piscine:         makePinSVG('0077B6','A0CCE8','<circle cx="4" cy="-6" r="2"/><line x1="4" y1="-4" x2="4" y2="2"/><line x1="1" y1="0" x2="4" y2="0"/><path d="M-7 4c2-3 5-3 7 0s5 3 7 0" stroke-width="1.5"/><path d="M-7 7c2-2 5-2 7 0s5 2 7 0" stroke-width="1.2"/>'),
+};
+
+function makePinSVG(colorHex, lightHex, symbolContent) {
+  return `<svg viewBox="0 0 36 48" xmlns="http://www.w3.org/2000/svg" width="28" height="37">
+    <path d="M18 2C10.268 2 4 8.268 4 16c0 9.5 14 30 14 30S32 25.5 32 16C32 8.268 25.732 2 18 2z" fill="#${colorHex}" stroke="#${lightHex}" stroke-width="2"/>
+    <g transform="translate(18,14)" fill="none" stroke="#${lightHex}" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+      ${symbolContent}
+    </g>
+  </svg>`;
+}
+
+function makePinIcon(svgHtml) {
+  return L.divIcon({
+    className: '',
+    html: svgHtml,
+    iconSize: [28, 37],
+    iconAnchor: [14, 37],
+    popupAnchor: [0, -38],
+  });
+}
+
+// Icona piccola per fontanelle (punto colorato)
 function makeSmallIcon(color, size) {
   return L.divIcon({
     className: '',
-    html: `<div style="
-      width:${size}px; height:${size}px;
-      background:${color};
-      border-radius:50%;
-      border:1.5px solid rgba(255,255,255,0.8);
-      box-shadow:0 1px 3px rgba(0,0,0,0.3);
-    "></div>`,
+    html: `<div style="width:${size}px;height:${size}px;background:${color};border-radius:50%;border:1.5px solid rgba(255,255,255,0.8);box-shadow:0 1px 3px rgba(0,0,0,0.3);"></div>`,
     iconSize: [size, size],
     iconAnchor: [size/2, size/2],
     popupAnchor: [0, -size/2 - 2],
@@ -855,22 +894,16 @@ function makeSmallIcon(color, size) {
 }
 
 function makeIcon(cfg, size) {
-  const s = size || 30;
-  const fs = Math.round(s * 0.47);
+  // fallback per layer senza pin dedicato
+  const s = size || 28;
   return L.divIcon({
     className: '',
-    html: `<div style="
-      width:${s}px; height:${s}px;
-      background:${cfg.color};
-      border:2px solid rgba(255,255,255,0.85);
-      border-radius:50%;
-      display:flex; align-items:center; justify-content:center;
-      font-size:${fs}px;
-      box-shadow:0 2px 6px rgba(0,0,0,0.25);
-    ">${cfg.emoji}</div>`,
-    iconSize: [s, s],
-    iconAnchor: [s/2, s/2],
-    popupAnchor: [0, -s/2 - 3],
+    html: `<svg viewBox="0 0 36 48" xmlns="http://www.w3.org/2000/svg" width="${s}" height="${Math.round(s*1.32)}">
+      <path d="M18 2C10.268 2 4 8.268 4 16c0 9.5 14 30 14 30S32 25.5 32 16C32 8.268 25.732 2 18 2z" fill="${cfg.color}" stroke="rgba(255,255,255,0.6)" stroke-width="2"/>
+    </svg>`,
+    iconSize: [s, Math.round(s*1.32)],
+    iconAnchor: [s/2, Math.round(s*1.32)],
+    popupAnchor: [0, -Math.round(s*1.32)-2],
   });
 }
 
@@ -1005,7 +1038,8 @@ async function loadLayer(id) {
   const cfg = LAYER_CONFIG[id];
   const group = L.layerGroup();
   const smallSize = SMALL_LAYERS[id];
-  const icon = smallSize ? makeSmallIcon(cfg.color, smallSize) : makeIcon(cfg);
+  const pinSvg = PIN_SVGS_LAYER[id];
+  const icon = smallSize ? makeSmallIcon(cfg.color, smallSize) : (pinSvg ? makePinIcon(pinSvg) : makeIcon(cfg));
 
   try {
     const resp = await fetch(cfg.file);
@@ -1075,8 +1109,8 @@ async function loadRifugiChiuso() {
       if (!lat || !lon || isNaN(lat) || isNaN(lon)) return;
 
       const tipo = val(p.Tipo) || '';
-      const stile = TIPO_STYLE[tipo] || TIPO_DEFAULT;
-      const icon = makeIcon(stile);
+      const pinSvg = PIN_SVGS[tipo];
+      const icon = pinSvg ? makePinIcon(pinSvg) : (() => { const stile = TIPO_STYLE[tipo] || TIPO_DEFAULT; return makeIcon(stile); })();
 
       const marker = L.marker([lat, lon], { icon, pane: 'marcatori' })
         .bindPopup(buildPopup(p), { maxWidth: 320 });
@@ -1304,18 +1338,32 @@ async function init() {
   await Promise.allSettled(promises);
 
   // Contatore totale gruppo ALL'APERTO
-  // Somma parchi pubblici + parchi affaccio + spiagge (layer puntuali e poligonali)
   const idsAperto = ['parchi_pubblici', 'parchi_affaccio', 'spiagge'];
   let totAperto = 0;
   idsAperto.forEach(id => {
     const el = document.getElementById('count-' + id);
-    if (el) {
-      const n = parseInt(el.textContent);
-      if (!isNaN(n)) totAperto += n;
-    }
+    if (el) { const n = parseInt(el.textContent); if (!isNaN(n)) totAperto += n; }
   });
   const elAperto = document.getElementById('count-gruppo-aperto');
   if (elAperto) elAperto.textContent = totAperto > 0 ? totAperto : '–';
+
+  // Contatore totale gruppo SFD
+  const elSfd = document.getElementById('count-sfd');
+  const elGruppoSfd = document.getElementById('count-gruppo-sfd');
+  if (elGruppoSfd && elSfd) {
+    const n = parseInt(elSfd.textContent);
+    elGruppoSfd.textContent = !isNaN(n) ? n : '–';
+  }
+
+  // Contatore totale gruppo INFRASTRUTTURE
+  const idsInfra = ['casette_acqua', 'fontanelle', 'piscine'];
+  let totInfra = 0;
+  idsInfra.forEach(id => {
+    const el = document.getElementById('count-' + id);
+    if (el) { const n = parseInt(el.textContent); if (!isNaN(n)) totInfra += n; }
+  });
+  const elInfra = document.getElementById('count-gruppo-infra');
+  if (elInfra) elInfra.textContent = totInfra > 0 ? totInfra : '–';
 
   document.getElementById('loading').style.display = 'none';
 }
