@@ -1138,7 +1138,7 @@ async function loadRifugiChiuso() {
       total++;
     });
 
-    document.getElementById('count-rifugi_chiuso').textContent = total;
+    document.getElementById('count-gruppo-chiuso').textContent = total;
 
     Object.entries(markersByTipo).forEach(([tipo, markers]) => {
       const el = document.getElementById('lcount-' + tipo);
@@ -1146,7 +1146,7 @@ async function loadRifugiChiuso() {
     });
 
   } catch (e) {
-    document.getElementById('count-rifugi_chiuso').textContent = '–';
+    document.getElementById('count-gruppo-chiuso').textContent = '–';
     console.warn('Layer rifugi_chiuso non caricato:', e.message);
   }
 
