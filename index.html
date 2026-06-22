@@ -999,6 +999,13 @@ function buildPopup(p) {
 // Layer con icona piccola (punti, senza emoji)
 const SMALL_LAYERS = { fontanelle: 8, casette_acqua: 12 };
 
+// Cache icone: una per tipo, non una per marker
+const ICON_CACHE = {};
+function getCachedIcon(key, factoryFn) {
+  if (!ICON_CACHE[key]) ICON_CACHE[key] = factoryFn();
+  return ICON_CACHE[key];
+}
+
 // ── CARICAMENTO GEOJSON (layer semplici) ──────────────────────────
 async function loadLayer(id) {
   const cfg = LAYER_CONFIG[id];
