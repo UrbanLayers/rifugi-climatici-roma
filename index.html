@@ -1025,6 +1025,22 @@ function buildPopup(p) {
   `;
 }
 
+// Popup semplificato per layer con pochi campi (fontanelle, casette acqua)
+function buildSimplePopup(p, categoryLabel, titleFieldKeys) {
+  const title = getField(p, ...titleFieldKeys) || categoryLabel;
+  const googleMaps = getField(p, 'GoogleMaps', 'GOOGLEMAPS');
+  const footer = googleMaps
+    ? `<div class="popup-footer"><a href="${googleMaps}" target="_blank" class="popup-link">📍 Google Maps</a></div>`
+    : '';
+  return `
+    <div class="popup-header">
+      <div class="popup-tipo">${categoryLabel}</div>
+      <div class="popup-nome">${title}</div>
+    </div>
+    ${footer}
+  `;
+}
+
 // Layer con icona piccola (punti, senza emoji)
 const SMALL_LAYERS = { fontanelle: 8, casette_acqua: 12 };
 
@@ -1072,8 +1088,16 @@ async function loadLayer(id) {
       if (!lat || !lon || isNaN(lat) || isNaN(lon)) return;
 
       const markerPane = (id === 'fontanelle' || id === 'casette_acqua') ? 'infra' : 'marcatori';
+      let popupHtml;
+      if (id === 'fontanelle') {
+        popupHtml = buildSimplePopup(p, 'Fontanelle', ['d_tipo', 'D_TIPO', 'Tipo', 'TIPO']);
+      } else if (id === 'casette_acqua') {
+        popupHtml = buildSimplePopup(p, "Casette dell'acqua", ['DENOM', 'Denom', 'Nome', 'NOME']);
+      } else {
+        popupHtml = buildPopup(p);
+      }
       const marker = L.marker([lat, lon], { icon, pane: markerPane })
-        .bindPopup(buildPopup(p), { maxWidth: 320 });
+        .bindPopup(popupHtml, { maxWidth: 320 });
       group.addLayer(marker);
       count++;
     });
