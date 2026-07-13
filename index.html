@@ -592,13 +592,13 @@
     <!-- SFD -->
     <div class="sidebar-section cat-sfd">
       <div class="cat-header" style="margin-bottom:8px;">
-        <span style="flex:1;">Rifugi per persone senza dimora</span>
+        <span style="flex:1;">Rifugi climatici per persone senza dimora</span>
         <span class="layer-count" id="count-gruppo-sfd">–</span>
       </div>
 
       <label class="layer-row active" id="row-sfd">
         <span class="layer-icon" style="width:32px;height:32px;padding:0;border-radius:50%;overflow:hidden;flex-shrink:0;display:flex;align-items:center;justify-content:center;"><img src="icons/6.senzadimora.svg" width="32" height="32" style="display:block;width:100%;height:100%;object-fit:cover;border-radius:50%;"></span>
-        <span class="layer-name">Strutture per persone senza dimora</span>
+        <span class="layer-name">Rifugi climatici per persone senza dimora</span>
         <span class="layer-count" id="count-sfd">–</span>
         <span class="toggle">
           <input type="checkbox" id="tog-sfd" checked onchange="toggleLayer('sfd', this)">
@@ -693,7 +693,7 @@
 const LAYER_CONFIG = {
   spiagge:          { file: 'spiagge.geojson',           color: '#C9A84C', emoji: '🏖️', label: 'Spiagge libere' },
   piscine:          { file: 'piscine.geojson',           color: '#1ABC9C', emoji: '🏊', label: 'Piscine gratuite' },
-  sfd:              { file: 'sfd.geojson',               color: '#8C5FA8', emoji: '🏠', label: 'Strutture per persone senza dimora' },
+  sfd:              { file: 'sfd.geojson',               color: '#8C5FA8', emoji: '🏠', label: 'Rifugi climatici per persone senza dimora' },
   casette_acqua:    { file: 'casette_acqua.geojson',    color: '#2196A6', emoji: '💧', label: "Casette dell'acqua" },
   fontanelle:       { file: 'fontanelle.geojson',       color: '#0E86A0', emoji: '⛲', label: 'Fontanelle' },
 };
@@ -917,11 +917,11 @@ const CAMPO_CONFIG = [
   { key: 'Email2',             icon: '✉️', label: 'Email 2',            special: 'email' },
 ];
 
-function buildPopup(p) {
+function buildPopup(p, categoryOverride) {
   const rows = [];
 
   // Intestazione con Tipo e Nome
-  const titoloTipo = getField(p, 'Tipo', 'TIPO') || 'Rifugio climatico';
+  const titoloTipo = categoryOverride || getField(p, 'Tipo', 'TIPO') || 'Rifugio climatico';
   const titoloNome = getField(p, 'Nome', 'NOME', 'name', 'NAME') || '–';
 
   // Indirizzo + Municipio insieme
@@ -1093,7 +1093,9 @@ async function loadLayer(id) {
       } else if (id === 'casette_acqua') {
         popupHtml = buildSimplePopup(p, "Casette dell'acqua", ['DENOM', 'Denom', 'Nome', 'NOME']);
       } else {
-        popupHtml = buildPopup(p);
+        popupHtml = (id === 'sfd')
+          ? buildPopup(p, 'Rifugi climatici per persone senza dimora')
+          : buildPopup(p);
       }
       const marker = L.marker([lat, lon], { icon, pane: markerPane })
         .bindPopup(popupHtml, { maxWidth: 320 });
