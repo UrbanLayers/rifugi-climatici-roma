@@ -3,30 +3,25 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Rifugi Climatici – Roma Capitale</title>
+<title>Mappe Tematiche – Roma Capitale</title>
 
 <!-- Leaflet -->
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css"/>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
-
-
+<!-- GeoRaster per raster TIF -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/proj4/2.9.0/proj4.min.js"></script>
+<script src="https://unpkg.com/georaster@1.6.0/dist/georaster.browser.bundle.min.js"></script>
+<script src="https://unpkg.com/georaster-layer-for-leaflet@3.10.0/dist/georaster-layer-for-leaflet.min.js"></script>
 
 <style>
-  /* ── TOKENS ────────────────────────────────────────────────── */
   :root {
     --bg:        #F7F5F0;
     --panel:     #FFFFFF;
     --border:    #E0DDD6;
     --text:      #1A1A1A;
     --text-muted:#6B6660;
-    --accent:    #C1440E;   /* terracotta caldo */
+    --accent:    #C1440E;
     --header-h:  56px;
-
-    /* colori categoria */
-    --c-chiuso:   #3A7CA5;  /* blu ghiaccio */
-    --c-aperto:   #4E9E6A;  /* verde parco */
-    --c-sfd:      #8C5FA8;  /* viola */
-    --c-infra:    #2196A6;  /* azzurro acqua */
   }
 
   * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -41,7 +36,6 @@
     overflow: hidden;
   }
 
-  /* ── HEADER ─────────────────────────────────────────────────── */
   header {
     height: var(--header-h);
     background: var(--panel);
@@ -78,14 +72,12 @@
     margin-left: auto;
   }
 
-  /* ── LAYOUT ─────────────────────────────────────────────────── */
   .app {
     display: flex;
     flex: 1;
     overflow: hidden;
   }
 
-  /* ── SIDEBAR ─────────────────────────────────────────────────── */
   .sidebar {
     width: 280px;
     flex-shrink: 0;
@@ -97,48 +89,24 @@
   }
 
   .sidebar-section {
-    padding: 16px 16px 8px;
+    padding: 16px 16px 12px;
     border-bottom: 1px solid var(--border);
   }
 
   .sidebar-section:last-child { border-bottom: none; }
 
-  .section-label {
-    font-size: 10px;
-    font-weight: 700;
-    letter-spacing: 0.1em;
-    text-transform: uppercase;
-    color: var(--text-muted);
-    margin-bottom: 10px;
-  }
-
-  /* categoria header */
   .cat-header {
     font-size: 11px;
     font-weight: 700;
     letter-spacing: 0.06em;
     text-transform: uppercase;
     color: var(--text-muted);
-    margin: 14px 0 6px;
+    margin-bottom: 10px;
     display: flex;
     align-items: center;
     gap: 6px;
   }
 
-  .cat-header::before {
-    content: '';
-    display: inline-block;
-    width: 8px; height: 8px;
-    border-radius: 50%;
-    flex-shrink: 0;
-  }
-
-  .cat-chiuso  .cat-header::before { background: var(--c-chiuso); }
-  .cat-aperto  .cat-header::before { background: var(--c-aperto); }
-  .cat-sfd     .cat-header::before { background: var(--c-sfd); }
-  .cat-infra   .cat-header::before { background: var(--c-infra); }
-
-  /* layer toggle row */
   .layer-row {
     display: flex;
     align-items: center;
@@ -151,17 +119,11 @@
   .layer-row:hover .layer-name { color: var(--text); }
 
   .layer-icon {
-    width: 32px; height: 32px;
+    width: 26px; height: 26px;
     border-radius: 6px;
     display: flex; align-items: center; justify-content: center;
     flex-shrink: 0;
     font-size: 13px;
-  }
-
-  .layer-icon.svg-icon {
-    border-radius: 50%;
-    background: transparent !important;
-    padding: 0;
   }
 
   .layer-name {
@@ -174,7 +136,6 @@
 
   .layer-row.active .layer-name { color: var(--text); font-weight: 500; }
 
-  /* toggle switch */
   .toggle {
     position: relative;
     width: 32px; height: 18px;
@@ -205,7 +166,6 @@
   .toggle input:checked + .toggle-track { background: var(--accent); }
   .toggle input:checked + .toggle-track::after { transform: translateX(14px); }
 
-  /* contatore punti */
   .layer-count {
     font-size: 11px;
     color: var(--text-muted);
@@ -215,21 +175,18 @@
     flex-shrink: 0;
   }
 
-  /* ── MAPPA ───────────────────────────────────────────────────── */
   #map {
     flex: 1;
     height: 100%;
     z-index: 1;
   }
 
-  /* ── POPUP ───────────────────────────────────────────────────── */
   .leaflet-popup-content-wrapper {
     border-radius: 8px;
     box-shadow: 0 4px 20px rgba(0,0,0,0.12);
     padding: 0;
     overflow: hidden;
-    min-width: 260px;
-    max-width: 320px;
+    min-width: 220px;
   }
 
   .leaflet-popup-content { margin: 0; width: auto !important; }
@@ -255,80 +212,21 @@
     line-height: 1.3;
   }
 
-  .popup-body { padding: 10px 14px 12px; }
-
-  .popup-row {
-    display: flex;
-    align-items: flex-start;
-    gap: 8px;
-    margin-bottom: 6px;
-    font-size: 12.5px;
-    color: var(--text);
-    line-height: 1.4;
-  }
-
-  .popup-row:last-child { margin-bottom: 0; }
-
-  .popup-icon {
-    font-size: 13px;
-    flex-shrink: 0;
-    margin-top: 1px;
-    color: var(--text-muted);
-  }
-
-  .popup-label {
-    font-weight: 600;
-    color: var(--text-muted);
-    font-size: 11px;
-    min-width: 90px;
-  }
-
-  .popup-val { color: var(--text); }
-
-  .popup-footer {
-    padding: 8px 14px;
-    border-top: 1px solid var(--border);
-    display: flex;
-    gap: 8px;
-  }
-
-  .popup-link {
-    font-size: 11.5px;
-    color: var(--accent);
-    text-decoration: none;
-    font-weight: 500;
-  }
-
-  .popup-link:hover { text-decoration: underline; }
-
-  .badge-ac {
-    display: inline-block;
-    font-size: 10px;
+  .municipio-label {
+    background: transparent;
+    border: none;
+    box-shadow: none;
+    font-size: 9px;
     font-weight: 700;
-    padding: 2px 7px;
-    border-radius: 3px;
+    color: #333;
+    text-transform: uppercase;
     letter-spacing: 0.04em;
+    white-space: nowrap;
+    pointer-events: none;
   }
 
-  .badge-si  { background: #D4EDDA; color: #155724; }
-  .badge-no  { background: #F8D7DA; color: #721C24; }
-  .badge-nd  { background: #FFF3CD; color: #856404; }
+  .municipio-label::before { display: none; }
 
-  /* ── LEGENDA / INFO ──────────────────────────────────────────── */
-  .leaflet-control.info-box {
-    background: var(--panel);
-    border: 1px solid var(--border);
-    border-radius: 8px;
-    padding: 10px 14px;
-    font-size: 12px;
-    color: var(--text-muted);
-    box-shadow: 0 2px 8px rgba(0,0,0,0.08);
-    max-width: 200px;
-  }
-
-  .info-box strong { color: var(--text); display: block; margin-bottom: 4px; font-size: 13px; }
-
-  /* ── LOADING ─────────────────────────────────────────────────── */
   #loading {
     position: fixed; inset: 0;
     background: rgba(247,245,240,0.92);
@@ -347,302 +245,78 @@
   }
 
   @keyframes spin { to { transform: rotate(360deg); } }
-
   #loading p { font-size: 14px; color: var(--text-muted); }
-
-  /* ── LEGENDA SOTTOTIPI ───────────────────────────────────────── */
-  .legend-row {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    padding: 4px 0;
-  }
-
-  .legend-dot {
-    width: 22px; height: 22px;
-    border-radius: 50%;
-    display: flex; align-items: center; justify-content: center;
-    font-size: 12px;
-    flex-shrink: 0;
-    border: 2px solid rgba(255,255,255,0.8);
-    box-shadow: 0 1px 3px rgba(0,0,0,0.18);
-  }
-
-  .legend-label {
-    font-size: 12px;
-    color: var(--text-muted);
-    flex: 1;
-    line-height: 1.3;
-  }
-
-  .legend-count {
-    font-size: 11px;
-    color: var(--text-muted);
-    background: var(--bg);
-    border-radius: 10px;
-    padding: 1px 6px;
-    flex-shrink: 0;
-  }
-
-  /* ── NO DATA NOTICE ──────────────────────────────────────────── */
-  .no-data-notice {
-    background: #FFF8E1;
-    border: 1px dashed #F9A825;
-    border-radius: 6px;
-    padding: 8px 10px;
-    font-size: 11.5px;
-    color: #6D4C00;
-    margin: 6px 0 2px;
-    line-height: 1.4;
-  }
-
-  /* ── ETICHETTE MUNICIPI ─────────────────────────────────────── */
-  .municipio-label {
-    background: transparent;
-    border: none;
-    box-shadow: none;
-    font-size: 10px;
-    font-weight: 700;
-    color: #222;
-    text-transform: uppercase;
-    letter-spacing: 0.04em;
-    white-space: nowrap;
-    pointer-events: none;
-    text-shadow: -1px -1px 2px white, 1px -1px 2px white, -1px 1px 2px white, 1px 1px 2px white, 0 0 4px white;
-  }
-
-  .municipio-label::before { display: none; }
-
-  /* ── RESPONSIVE ──────────────────────────────────────────────── */
-  @media (max-width: 600px) {
-    .sidebar { width: 100%; position: absolute; bottom: 0; left: 0; z-index: 500;
-      max-height: 40vh; border-right: none; border-top: 1px solid var(--border); }
-    #map { height: 60vh; }
-  }
 </style>
 </head>
 <body>
 
 <div id="loading">
   <div class="spinner"></div>
-  <p>Caricamento rifugi climatici…</p>
+  <p>Caricamento mappe tematiche…</p>
 </div>
 
-<!-- HEADER -->
 <header>
   <span class="header-badge">Piano Caldo</span>
-  <h1>Rifugi Climatici – Ufficio Clima di Roma Capitale</h1>
+  <h1>Mappe Tematiche – Roma</h1>
   <span class="header-sub">Roma Capitale · Ufficio Clima</span>
 </header>
 
 <div class="app">
+  <nav class="sidebar">
 
-  <!-- SIDEBAR -->
-  <nav class="sidebar" id="sidebar">
+    <!-- MAPPE TEMATICHE -->
+    <div class="sidebar-section">
+      <div class="cat-header">Mappe tematiche</div>
 
-    <!-- AL CHIUSO -->
-    <div class="sidebar-section cat-chiuso">
-      <div class="cat-header" style="margin-bottom:8px;">
-        <span style="flex:1;">Al chiuso</span>
-        <span class="layer-count" id="count-gruppo-chiuso">–</span>
-      </div>
-
-      <label class="layer-row active" id="row-tipo-CentriAnziani">
-        <span class="layer-icon" style="width:32px;height:32px;padding:0;border-radius:50%;overflow:hidden;flex-shrink:0;display:flex;align-items:center;justify-content:center;"><img src="icons/1.CENTRI_ANZIANI.svg" width="32" height="32" style="display:block;width:100%;height:100%;object-fit:cover;border-radius:50%;"></span>
-        <span class="layer-name">Centri Anziani (CSAQ)</span>
-        <span class="layer-count" id="lcount-Centri Anziani (CSAQ)">–</span>
+      <label class="layer-row active" id="row-hm">
+        <span class="layer-icon" style="background:#F5EEF8;">🌡️</span>
+        <span class="layer-name">Indice di raffrescamento urbano</span>
+        <span class="layer-count" id="count-hm">–</span>
         <span class="toggle">
-          <input type="checkbox" id="tog-tipo-CentriAnziani" checked onchange="toggleTipo('Centri Anziani (CSAQ)', this)">
+          <input type="checkbox" id="tog-hm" checked onchange="toggleLayer('hm', this)">
           <span class="toggle-track"></span>
         </span>
       </label>
 
-      <label class="layer-row active" id="row-tipo-Biblioteche">
-        <span class="layer-icon" style="width:32px;height:32px;padding:0;border-radius:50%;overflow:hidden;flex-shrink:0;display:flex;align-items:center;justify-content:center;"><img src="icons/2.BIBLIOTECHE.svg" width="32" height="32" style="display:block;width:100%;height:100%;object-fit:cover;border-radius:50%;"></span>
-        <span class="layer-name">Biblioteche</span>
-        <span class="layer-count" id="lcount-Biblioteche">–</span>
-        <span class="toggle">
-          <input type="checkbox" id="tog-tipo-Biblioteche" checked onchange="toggleTipo('Biblioteche', this)">
-          <span class="toggle-track"></span>
-        </span>
-      </label>
-
-      <label class="layer-row active" id="row-tipo-AuleStudio">
-        <span class="layer-icon" style="width:32px;height:32px;padding:0;border-radius:50%;overflow:hidden;flex-shrink:0;display:flex;align-items:center;justify-content:center;"><img src="icons/3.aulestudio.svg" width="32" height="32" style="display:block;width:100%;height:100%;object-fit:cover;border-radius:50%;"></span>
-        <span class="layer-name">Aule Studio</span>
-        <span class="layer-count" id="lcount-Aule Studio">–</span>
-        <span class="toggle">
-          <input type="checkbox" id="tog-tipo-AuleStudio" checked onchange="toggleTipo('Aule Studio', this)">
-          <span class="toggle-track"></span>
-        </span>
-      </label>
-
-      <label class="layer-row active" id="row-tipo-Musei">
-        <span class="layer-icon" style="width:32px;height:32px;padding:0;border-radius:50%;overflow:hidden;flex-shrink:0;display:flex;align-items:center;justify-content:center;"><img src="icons/5.MUSEI.svg" width="32" height="32" style="display:block;width:100%;height:100%;object-fit:cover;border-radius:50%;"></span>
-        <span class="layer-name">Musei Gratuiti Residenti</span>
-        <span class="layer-count" id="lcount-Musei Gratuiti Residenti">–</span>
-        <span class="toggle">
-          <input type="checkbox" id="tog-tipo-Musei" checked onchange="toggleTipo('Musei Gratuiti Residenti', this)">
-          <span class="toggle-track"></span>
-        </span>
-      </label>
-
-      <label class="layer-row active" id="row-tipo-CentriCulturali">
-        <span class="layer-icon" style="width:32px;height:32px;padding:0;border-radius:50%;overflow:hidden;flex-shrink:0;display:flex;align-items:center;justify-content:center;"><img src="icons/4.centriculpolicivici.svg" width="32" height="32" style="display:block;width:100%;height:100%;object-fit:cover;border-radius:50%;"></span>
-        <span class="layer-name">Centri Culturali e Poli Civici</span>
-        <span class="layer-count" id="lcount-Centri Culturali e Poli Civici">–</span>
-        <span class="toggle">
-          <input type="checkbox" id="tog-tipo-CentriCulturali" checked onchange="toggleTipo('Centri Culturali e Poli Civici', this)">
-          <span class="toggle-track"></span>
-        </span>
-      </label>
-    </div>
-
-    <!-- ALL'APERTO -->
-    <div class="sidebar-section cat-aperto">
-      <div class="cat-header" style="margin-bottom:8px;">
-        <span style="flex:1;">All'aperto</span>
-        <span class="layer-count" id="count-gruppo-aperto">–</span>
-      </div>
-
-      <label class="layer-row active" id="row-parchi_pubblici">
-        <span class="layer-icon" style="padding:0;overflow:hidden;border-radius:6px;">
-          <svg viewBox="0 0 26 26" xmlns="http://www.w3.org/2000/svg" width="26" height="26">
-            <defs>
-              <linearGradient id="ylgnbu-pp" x1="0" y1="0" x2="1" y2="0">
-                <stop offset="0%" stop-color="#ffffd9"/>
-                <stop offset="12.5%" stop-color="#edf8b1"/>
-                <stop offset="25%" stop-color="#c7e9b4"/>
-                <stop offset="37.5%" stop-color="#7fcdbb"/>
-                <stop offset="50%" stop-color="#41b6c4"/>
-                <stop offset="62.5%" stop-color="#1d91c0"/>
-                <stop offset="75%" stop-color="#225ea8"/>
-                <stop offset="87.5%" stop-color="#253494"/>
-                <stop offset="100%" stop-color="#081d58"/>
-              </linearGradient>
-            </defs>
-            <rect width="26" height="26" fill="url(#ylgnbu-pp)" rx="6" stroke="#ccc" stroke-width="0.5"/>
-          </svg>
-        </span>
-        <span class="layer-name">Parchi Pubblici<br><small style="font-weight:400;color:var(--text-muted);">indice di raffrescamento</small></span>
-        <span class="layer-count" id="count-parchi_pubblici">–</span>
-        <span class="toggle">
-          <input type="checkbox" id="tog-parchi_pubblici" checked onchange="togglePolyLayer('parchi_pubblici', this)">
-          <span class="toggle-track"></span>
-        </span>
-      </label>
-
-      <label class="layer-row active" id="row-parchi_affaccio">
-        <span class="layer-icon" style="padding:0;overflow:hidden;border-radius:6px;">
-          <svg viewBox="0 0 26 26" xmlns="http://www.w3.org/2000/svg" width="26" height="26">
-            <defs>
-              <linearGradient id="ylgnbu-pa" x1="0" y1="0" x2="1" y2="0">
-                <stop offset="0%" stop-color="#ffffd9"/>
-                <stop offset="12.5%" stop-color="#edf8b1"/>
-                <stop offset="25%" stop-color="#c7e9b4"/>
-                <stop offset="37.5%" stop-color="#7fcdbb"/>
-                <stop offset="50%" stop-color="#41b6c4"/>
-                <stop offset="62.5%" stop-color="#1d91c0"/>
-                <stop offset="75%" stop-color="#225ea8"/>
-                <stop offset="87.5%" stop-color="#253494"/>
-                <stop offset="100%" stop-color="#081d58"/>
-              </linearGradient>
-            </defs>
-            <rect width="26" height="26" fill="url(#ylgnbu-pa)" rx="6" stroke="#ccc" stroke-width="0.5"/>
-          </svg>
-        </span>
-        <span class="layer-name">Parchi di Affaccio<br><small style="font-weight:400;color:var(--text-muted);">indice di raffrescamento</small></span>
-        <span class="layer-count" id="count-parchi_affaccio">–</span>
-        <span class="toggle">
-          <input type="checkbox" id="tog-parchi_affaccio" checked onchange="togglePolyLayer('parchi_affaccio', this)">
-          <span class="toggle-track"></span>
-        </span>
-      </label>
-
-      <!-- Legenda YlGnBu -->
-      <div style="margin:4px 0 10px;">
-        <div style="font-size:10px;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:var(--text-muted);margin-bottom:4px;">Indice di raffrescamento</div>
+      <div style="margin:4px 0 12px;">
         <div style="display:flex;height:10px;border-radius:3px;overflow:hidden;margin-bottom:3px;">
-          <div style="flex:1;background:#ffffd9;"></div>
-          <div style="flex:1;background:#edf8b1;"></div>
-          <div style="flex:1;background:#c7e9b4;"></div>
-          <div style="flex:1;background:#7fcdbb;"></div>
-          <div style="flex:1;background:#41b6c4;"></div>
-          <div style="flex:1;background:#1d91c0;"></div>
-          <div style="flex:1;background:#225ea8;"></div>
-          <div style="flex:1;background:#253494;"></div>
-          <div style="flex:1;background:#081d58;"></div>
+          <div style="flex:1;background:#9e0142;"></div>
+          <div style="flex:1;background:#d53e4f;"></div>
+          <div style="flex:1;background:#f46d43;"></div>
+          <div style="flex:1;background:#fdae61;"></div>
+          <div style="flex:1;background:#fee08b;"></div>
+          <div style="flex:1;background:#ffffbf;"></div>
+          <div style="flex:1;background:#e6f598;"></div>
+          <div style="flex:1;background:#abdda4;"></div>
+          <div style="flex:1;background:#66c2a5;"></div>
+          <div style="flex:1;background:#3288bd;"></div>
+          <div style="flex:1;background:#5e4fa2;"></div>
         </div>
         <div style="display:flex;justify-content:space-between;font-size:10px;color:var(--text-muted);">
           <span>0 (basso)</span><span>1 (alto)</span>
         </div>
       </div>
 
-      <label class="layer-row active" id="row-spiagge">
-        <span class="layer-icon" style="width:32px;height:32px;padding:0;border-radius:50%;overflow:hidden;flex-shrink:0;display:flex;align-items:center;justify-content:center;"><img src="icons/10.SPIAGGE.svg" width="32" height="32" style="display:block;width:100%;height:100%;object-fit:cover;border-radius:50%;"></span>
-        <span class="layer-name">Spiagge libere</span>
-        <span class="layer-count" id="count-spiagge">–</span>
+      <label class="layer-row active" id="row-areaintervento">
+        <span class="layer-icon" style="background:#FDEEEE;">🔴</span>
+        <span class="layer-name">Aree prioritarie intervento caldo</span>
+        <span class="layer-count" id="count-areaintervento">–</span>
         <span class="toggle">
-          <input type="checkbox" id="tog-spiagge" checked onchange="toggleLayer('spiagge', this)">
+          <input type="checkbox" id="tog-areaintervento" checked onchange="toggleLayer('areaintervento', this)">
           <span class="toggle-track"></span>
         </span>
       </label>
-    </div>
 
-    <!-- SFD -->
-    <div class="sidebar-section cat-sfd">
-      <div class="cat-header" style="margin-bottom:8px;">
-        <span style="flex:1;">Rifugi per persone senza dimora</span>
-        <span class="layer-count" id="count-gruppo-sfd">–</span>
+      <div style="margin:4px 0 4px;">
+        <div style="display:flex;align-items:center;gap:6px;margin-bottom:4px;">
+          <div style="width:14px;height:14px;background:#8B0000;border-radius:2px;flex-shrink:0;"></div>
+          <span style="font-size:11px;color:var(--text-muted);">Priorità 1</span>
+        </div>
+        <div style="display:flex;align-items:center;gap:6px;">
+          <div style="width:14px;height:14px;background:#E57373;border-radius:2px;flex-shrink:0;"></div>
+          <span style="font-size:11px;color:var(--text-muted);">Priorità 2</span>
+        </div>
       </div>
-
-      <label class="layer-row active" id="row-sfd">
-        <span class="layer-icon" style="width:32px;height:32px;padding:0;border-radius:50%;overflow:hidden;flex-shrink:0;display:flex;align-items:center;justify-content:center;"><img src="icons/6.senzadimora.svg" width="32" height="32" style="display:block;width:100%;height:100%;object-fit:cover;border-radius:50%;"></span>
-        <span class="layer-name">Strutture per persone senza dimora</span>
-        <span class="layer-count" id="count-sfd">–</span>
-        <span class="toggle">
-          <input type="checkbox" id="tog-sfd" checked onchange="toggleLayer('sfd', this)">
-          <span class="toggle-track"></span>
-        </span>
-      </label>
-    </div>
-
-    <!-- INFRASTRUTTURE -->
-    <div class="sidebar-section cat-infra">
-      <div class="cat-header" style="margin-bottom:8px;">
-        <span style="flex:1;">Infrastrutture rinfrescanti</span>
-        <span class="layer-count" id="count-gruppo-infra">–</span>
-      </div>
-
-      <label class="layer-row active" id="row-casette_acqua">
-        <span class="layer-icon" style="width:32px;height:32px;padding:0;border-radius:50%;overflow:hidden;flex-shrink:0;display:flex;align-items:center;justify-content:center;"><img src="icons/8.casetteacqua.svg" width="32" height="32" style="display:block;width:100%;height:100%;object-fit:cover;border-radius:50%;"></span>
-        <span class="layer-name">Casette dell'acqua</span>
-        <span class="layer-count" id="count-casette_acqua">–</span>
-        <span class="toggle">
-          <input type="checkbox" id="tog-casette_acqua" checked onchange="toggleLayer('casette_acqua', this)">
-          <span class="toggle-track"></span>
-        </span>
-      </label>
-
-      <label class="layer-row active" id="row-fontanelle">
-        <span class="layer-icon" style="width:32px;height:32px;padding:0;border-radius:50%;overflow:hidden;flex-shrink:0;display:flex;align-items:center;justify-content:center;"><img src="icons/9.FONTANELLE.svg" width="32" height="32" style="display:block;width:100%;height:100%;object-fit:cover;border-radius:50%;"></span>
-        <span class="layer-name">Fontanelle pubbliche</span>
-        <span class="layer-count" id="count-fontanelle">–</span>
-        <span class="toggle">
-          <input type="checkbox" id="tog-fontanelle" checked onchange="toggleLayer('fontanelle', this)">
-          <span class="toggle-track"></span>
-        </span>
-      </label>
-
-      <label class="layer-row active" id="row-piscine">
-        <span class="layer-icon" style="width:32px;height:32px;padding:0;border-radius:50%;overflow:hidden;flex-shrink:0;display:flex;align-items:center;justify-content:center;"><img src="icons/7.piscine.svg" width="32" height="32" style="display:block;width:100%;height:100%;object-fit:cover;border-radius:50%;"></span>
-        <span class="layer-name">Piscine gratuite per over 70</span>
-        <span class="layer-count" id="count-piscine">–</span>
-        <span class="toggle">
-          <input type="checkbox" id="tog-piscine" checked onchange="toggleLayer('piscine', this)">
-          <span class="toggle-track"></span>
-        </span>
-      </label>
     </div>
 
     <!-- CONFINI -->
@@ -650,31 +324,21 @@
       <div class="cat-header">Confini amministrativi</div>
 
       <label class="layer-row active" id="row-comune">
-        <span class="layer-icon svg-icon" style="background:#555;">
-          <svg viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg" width="14" height="14">
-            <rect x="3" y="3" width="14" height="14" rx="1" stroke="white" stroke-width="1.5" stroke-dasharray="3 2"/>
-          </svg>
-        </span>
+        <span class="layer-icon" style="background:#F0F0F0;">🗺️</span>
         <span class="layer-name">Comune di Roma</span>
         <span class="layer-count" id="count-comune">–</span>
         <span class="toggle">
-          <input type="checkbox" id="tog-comune" checked onchange="toggleConfine('comune', this)">
+          <input type="checkbox" id="tog-comune" checked onchange="toggleLayer('comune', this)">
           <span class="toggle-track"></span>
         </span>
       </label>
 
       <label class="layer-row active" id="row-municipi">
-        <span class="layer-icon svg-icon" style="background:#777;">
-          <svg viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg" width="14" height="14">
-            <rect x="3" y="3" width="14" height="14" rx="1" stroke="white" stroke-width="1" stroke-dasharray="2 2"/>
-            <line x1="10" y1="3" x2="10" y2="17" stroke="white" stroke-width="0.8" stroke-dasharray="2 2"/>
-            <line x1="3" y1="10" x2="17" y2="10" stroke="white" stroke-width="0.8" stroke-dasharray="2 2"/>
-          </svg>
-        </span>
+        <span class="layer-icon" style="background:#F0F0F0;">📍</span>
         <span class="layer-name">Municipi</span>
         <span class="layer-count" id="count-municipi">–</span>
         <span class="toggle">
-          <input type="checkbox" id="tog-municipi" checked onchange="toggleConfine('municipi', this)">
+          <input type="checkbox" id="tog-municipi" checked onchange="toggleLayer('municipi', this)">
           <span class="toggle-track"></span>
         </span>
       </label>
@@ -682,720 +346,156 @@
 
   </nav>
 
-  <!-- MAPPA -->
   <div id="map"></div>
-
 </div>
 
 <script>
-// ── CONFIGURAZIONE LAYER ──────────────────────────────────────────
-// Layer semplici: file GeoJSON, colore marker, emoji icona
-const LAYER_CONFIG = {
-  spiagge:          { file: 'spiagge.geojson',           color: '#C9A84C', emoji: '🏖️', label: 'Spiagge libere' },
-  piscine:          { file: 'piscine.geojson',           color: '#1ABC9C', emoji: '🏊', label: 'Piscine gratuite' },
-  sfd:              { file: 'sfd.geojson',               color: '#8C5FA8', emoji: '🏠', label: 'Strutture per persone senza dimora' },
-  casette_acqua:    { file: 'casette_acqua.geojson',    color: '#2196A6', emoji: '💧', label: "Casette dell'acqua" },
-  fontanelle:       { file: 'fontanelle.geojson',       color: '#0E86A0', emoji: '⛲', label: 'Fontanelle' },
-};
+const map = L.map('map', { center: [41.9028, 12.4964], zoom: 11 });
 
-// Layer poligonali con coropleta
-const POLY_CONFIG = {
-  parchi_pubblici: { file: 'ParchiPubblici.geojson', campo: 'INDICE',  label: 'Parchi Pubblici' },
-  parchi_affaccio: { file: 'ParchiAffaccio.geojson', campo: 'INDICE',  label: "Parchi di Affaccio" },
-};
-
-// Colori e icone per sottotipi del layer Al chiuso
-// ── SCALA YLGNBU (9 classi, 0-1) ────────────────────────────────
-const YLGNBU = [
-  { max: 0.111, color: '#ffffd9' },
-  { max: 0.222, color: '#edf8b1' },
-  { max: 0.333, color: '#c7e9b4' },
-  { max: 0.444, color: '#7fcdbb' },
-  { max: 0.556, color: '#41b6c4' },
-  { max: 0.667, color: '#1d91c0' },
-  { max: 0.778, color: '#225ea8' },
-  { max: 0.889, color: '#253494' },
-  { max: 1.001, color: '#081d58' },
-];
-
-function getYlGnBu(value) {
-  if (value === null || value === undefined || isNaN(value)) return '#cccccc';
-  for (const cls of YLGNBU) {
-    if (value <= cls.max) return cls.color;
-  }
-  return '#081d58';
-}
-
-const TIPO_STYLE = {
-  'Aule Studio':                    { color: '#3A7CA5', emoji: '📚' },
-  'Biblioteche':                    { color: '#2563A6', emoji: '🏛️' },
-  'Centri Anziani (CSAQ)':          { color: '#1A5276', emoji: '🤝' },
-  'Musei Gratuiti Residenti':       { color: '#4A6FA5', emoji: '🏺' },
-  'Centri Culturali e Poli Civici': { color: '#5B84B1', emoji: '🎭' },
-};
-const TIPO_DEFAULT = { color: '#3A7CA5', emoji: '📍' };
-
-// ── MAPPA ─────────────────────────────────────────────────────────
-const map = L.map('map', {
-  center: [41.9028, 12.4964],
-  zoom: 11,
-  zoomControl: true,
-});
-
-// Gruppo chiuso dichiarato prima dei pane
-const gruppoChiuso = L.layerGroup();
-const markersByTipo = {};
-
-// Pane dedicato per i poligoni (sopra basemap, sotto marker)
-map.createPane('poligoni');
-map.getPane('poligoni').style.zIndex = 350;
-map.createPane('marcatori');
-map.getPane('marcatori').style.zIndex = 450;
-map.createPane('infra');
-map.getPane('infra').style.zIndex = 300;
-
-// Aggiunge subito il gruppo chiuso alla mappa
-gruppoChiuso.addTo(map);
-
-// Basemap OpenStreetMap
 L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
   attribution: '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
   maxZoom: 19,
 }).addTo(map);
 
-// ── CONFINE COMUNALE ──────────────────────────────────────────────
-// Scarica il confine del Comune di Roma da Overpass API (OSM relation 4257774)
-async function loadBoundary() {
-  const query = `
-    [out:json][timeout:30];
-    relation(4257774);
-    out geom;
-  `;
+map.createPane('poligoni');
+map.getPane('poligoni').style.zIndex = 350;
+
+const allLayers = {};
+
+// ── SCALA SPECTRAL ─────────────────────────────────────────────────
+const SPECTRAL_COLORS = [
+  [158,  1, 66],[213, 62, 79],[244,109, 67],[253,174, 97],[254,224,139],
+  [255,255,191],[230,245,152],[171,221,164],[102,194,165],[ 50,136,189],[ 94, 79,162],
+];
+
+function spectralColor(value) {
+  if (value === null || value === undefined || isNaN(value)) return null;
+  const idx = Math.min(Math.floor(value * SPECTRAL_COLORS.length), SPECTRAL_COLORS.length - 1);
+  const [r, g, b] = SPECTRAL_COLORS[idx];
+  return `rgba(${r},${g},${b},0.75)`;
+}
+
+// ── RASTER ─────────────────────────────────────────────────────────
+async function loadRaster() {
   try {
-    const resp = await fetch('https://overpass-api.de/api/interpreter', {
-      method: 'POST',
-      body: 'data=' + encodeURIComponent(query),
-    });
-    if (!resp.ok) throw new Error('Overpass non raggiungibile');
-    const data = await resp.json();
-
-    // Ricostruisce i membri way come anelli GeoJSON
-    const rings = [];
-    data.elements.forEach(el => {
-      if (el.type === 'way' && el.geometry) {
-        const coords = el.geometry.map(pt => [pt.lon, pt.lat]);
-        rings.push(coords);
-      }
-    });
-
-    if (rings.length === 0) return;
-
-    // Crea un GeoJSON MultiLineString con tutti i segmenti di confine
-    const boundaryGeoJSON = {
-      type: 'FeatureCollection',
-      features: rings.map(ring => ({
-        type: 'Feature',
-        geometry: { type: 'LineString', coordinates: ring },
-        properties: {},
-      })),
-    };
-
-    L.geoJSON(boundaryGeoJSON, {
-      style: {
-        color: '#C1440E',
-        weight: 2.5,
-        opacity: 0.85,
-        dashArray: '6 4',
-        fill: false,
+    const resp = await fetch('hm.tif');
+    if (!resp.ok) throw new Error('HTTP ' + resp.status);
+    const buffer = await resp.arrayBuffer();
+    const georaster = await parseGeoraster(buffer);
+    const layer = new GeoRasterLayer({
+      georaster,
+      opacity: 0.75,
+      pixelValuesToColorFn: values => {
+        const v = values[0];
+        if (v === georaster.noDataValue || v === null || isNaN(v)) return null;
+        return spectralColor(Math.max(0, Math.min(1, v)));
       },
-    }).addTo(map);
-
-  } catch (e) {
-    console.warn('Confine comunale non caricato:', e.message);
+      resolution: 256,
+    });
+    allLayers['hm'] = L.layerGroup([layer]);
+    allLayers['hm'].addTo(map);
+    const el = document.getElementById('count-hm');
+    if (el) el.textContent = '✓';
+  } catch(e) {
+    const el = document.getElementById('count-hm');
+    if (el) { el.textContent = '–'; }
+    console.warn('hm.tif non caricato:', e.message);
   }
 }
 
-// ── STATO ─────────────────────────────────────────────────────────
-const layers = {};   // id → L.LayerGroup
-const loaded = {};   // id → bool
-
-// ── MARKER ────────────────────────────────────────────────────────
-// ── ICONE IMMAGINE ────────────────────────────────────────────────
-const CIRCLE_ICONS = {
-  'Centri Anziani (CSAQ)': {color:'#2D6B3C', img:'icons/1.CENTRI_ANZIANI.svg'},
-  'Biblioteche': {color:'#C1440E', img:'icons/2.BIBLIOTECHE.svg'},
-  'Aule Studio': {color:'#2D6A9F', img:'icons/3.aulestudio.svg'},
-  'Musei Gratuiti Residenti': {color:'#7B4F2E', img:'icons/5.MUSEI.svg'},
-  'Centri Culturali e Poli Civici': {color:'#2A9D8F', img:'icons/4.centriculpolicivici.svg'},
-  'spiagge': {color:'#C9A84C', img:'icons/10.SPIAGGE.svg'},
-  'sfd': {color:'#8C5FA8', img:'icons/6.senzadimora.svg'},
-  'casette_acqua': {color:'#0096C7', img:'icons/8.casetteacqua.svg'},
-  'fontanelle': {color:'#48CAE4', img:'icons/9.FONTANELLE.svg'},
-  'piscine': {color:'#4E9E6A', img:'icons/7.piscine.svg'},
-};
-
-function makeCircleIcon(color, img, size) {
-  size = size || 32;
-  const html = img
-    ? `<div style="width:${size}px;height:${size}px;border-radius:50%;overflow:hidden;box-shadow:0 2px 6px rgba(0,0,0,0.35);">
-        <img src="${img}" width="${size}" height="${size}" style="display:block;width:100%;height:100%;object-fit:cover;">
-       </div>`
-    : `<div style="width:${size}px;height:${size}px;background:${color};border-radius:50%;box-shadow:0 2px 6px rgba(0,0,0,0.35);"></div>`;
-  return L.divIcon({
-    className: '',
-    html,
-    iconSize: [size, size],
-    iconAnchor: [size/2, size/2],
-    popupAnchor: [0, -size/2 - 4],
-  });
-}
-
-// Icona piccola per fontanelle (punto colorato)
-function makeSmallIcon(color, size) {
-  return L.divIcon({
-    className: '',
-    html: `<div style="width:${size}px;height:${size}px;background:${color};border-radius:50%;border:1.5px solid rgba(255,255,255,0.8);box-shadow:0 1px 3px rgba(0,0,0,0.3);"></div>`,
-    iconSize: [size, size],
-    iconAnchor: [size/2, size/2],
-    popupAnchor: [0, -size/2 - 2],
-  });
-}
-
-function makeIcon(cfg, size) {
-  // fallback generico cerchio
-  const s = size || 28;
-  return L.divIcon({
-    className: '',
-    html: `<svg viewBox="0 0 ${s} ${s}" xmlns="http://www.w3.org/2000/svg" width="${s}" height="${s}">
-      <circle cx="${s/2}" cy="${s/2}" r="${s/2-1}" fill="${cfg.color}"/>
-    </svg>`,
-    iconSize: [s, s],
-    iconAnchor: [s/2, s/2],
-    popupAnchor: [0, -s/2 - 4],
-  });
-}
-
-// ── POPUP ─────────────────────────────────────────────────────────
-function val(v) {
-  return (v && String(v).trim() !== '' && v !== 'null' && v !== 'undefined') ? String(v).trim() : null;
-}
-
-// Legge un campo da un oggetto properties provando più varianti di maiuscole/minuscole
-function getField(p, ...names) {
-  for (const name of names) {
-    if (p[name] !== undefined && p[name] !== null) {
-      const v = val(p[name]);
-      if (v) return v;
-    }
-  }
-  return null;
-}
-
-function acBadge(v) {
-  const s = val(v);
-  if (!s) return '<span class="badge-ac badge-nd">n.d.</span>';
-  const u = s.toUpperCase();
-  if (u === 'SI' || u === 'SÌ' || u === 'YES') return '<span class="badge-ac badge-si">Sì</span>';
-  if (u === 'NO') return '<span class="badge-ac badge-no">No</span>';
-  return `<span class="badge-ac badge-nd">${s}</span>`;
-}
-
-// Mappa icone e label per i campi del popup
-const CAMPO_CONFIG = [
-  { key: 'Indirizzo',          icon: '📍', label: 'Indirizzo',          special: 'indirizzo' },
-  { key: 'Orari',              icon: '🕐', label: 'Orari' },
-  { key: 'Chiusura_estiva',    icon: '📅', label: 'Chiusura estiva' },
-  { key: 'Aria_cond',          icon: '❄️', label: 'Aria condizionata',  special: 'ac' },
-  { key: 'Accessibilita',      icon: '♿', label: 'Accessibilità' },
-  { key: 'Wifi',               icon: 'ℹ️', label: 'Wi-Fi' },
-  { key: 'Sedute_dentro',      icon: 'ℹ️', label: 'Sedute interne' },
-  { key: 'Sedute_fuori',       icon: 'ℹ️', label: 'Sedute esterne' },
-  { key: 'Servizi_aggiuntivi', icon: 'ℹ️', label: 'Servizi aggiuntivi' },
-  { key: 'Proprieta',          icon: 'ℹ️', label: 'Proprietà' },
-  { key: 'Telefono',           icon: '📞', label: 'Telefono',           special: 'tel' },
-  { key: 'Email',              icon: '✉️', label: 'Email',              special: 'email' },
-  { key: 'Email2',             icon: '✉️', label: 'Email 2',            special: 'email' },
-];
-
-function buildPopup(p) {
-  const rows = [];
-
-  // Intestazione con Tipo e Nome
-  const titoloTipo = getField(p, 'Tipo', 'TIPO') || 'Rifugio climatico';
-  const titoloNome = getField(p, 'Nome', 'NOME', 'name', 'NAME') || '–';
-
-  // Indirizzo + Municipio insieme
-  if (getField(p, 'Indirizzo', 'INDIRIZZO')) {
-    rows.push(`
-    <div class="popup-row">
-      <span class="popup-icon">📍</span>
-      <div><span class="popup-label">Indirizzo</span><br>
-      <span class="popup-val">${getField(p, 'Indirizzo', 'INDIRIZZO')}${getField(p, 'Municipio', 'MUNICIPIO') ? ' <span style="color:var(--text-muted)">· Mun. '+getField(p, 'Municipio', 'MUNICIPIO')+'</span>' : ''}</span></div>
-    </div>`);
-  } else if (getField(p, 'Municipio', 'MUNICIPIO')) {
-    rows.push(`
-    <div class="popup-row">
-      <span class="popup-icon">📍</span>
-      <div><span class="popup-label">Municipio</span><br>
-      <span class="popup-val">${getField(p, 'Municipio', 'MUNICIPIO')}</span></div>
-    </div>`);
-  }
-
-  // Tutti gli altri campi in ordine, con varianti di nome campo (shapefile tronca a 10 caratteri e maiuscolo)
-  // ordinati: [chiave1, chiave2, ...] -> prima variante trovata vince
-  const orderedFields = [
-    { keys: ['Orari', 'ORARI'],                           icon: '🕐', label: 'Orari' },
-    { keys: ['Chiusura_estiva', 'CHIUSURA_E', 'CHIUSURA_ESTIVA'], icon: '📅', label: 'Chiusura estiva' },
-    { keys: ['Aria_cond', 'ARIA_COND'],                    icon: '❄️', label: 'Aria condizionata', special: 'ac' },
-    { keys: ['Accessibilita', 'ACCESSIBIL', 'ACCESSIBILITA'], icon: '♿', label: 'Accessibilità' },
-    { keys: ['Wifi', 'WIFI'],                              icon: 'ℹ️', label: 'Wi-Fi' },
-    { keys: ['Sedute_dentro', 'SEDUTE_DEN'],               icon: '🪑', label: 'Sedute interne' },
-    { keys: ['Sedute_fuori', 'SEDUTE_FUO'],                icon: '🪑', label: 'Sedute esterne' },
-    { keys: ['Servizi_aggiuntivi', 'SERVIZI_AG'],          icon: 'ℹ️', label: 'Servizi aggiuntivi' },
-    { keys: ['Proprieta', 'PROPRIETA'],                    icon: '🏛️', label: 'Proprietà' },
-  ];
-
-  const usedKeys = new Set(['Tipo','TIPO','Nome','NOME','Indirizzo','INDIRIZZO','Municipio','MUNICIPIO',
-    'lat','LAT','lon','LON','GoogleMaps','GOOGLEMAPS','Sito_Web','SITO_WEB','Email','EMAIL','Email2','EMAIL2',
-    'Telefono','TELEFONO','fid','FID']);
-
-  orderedFields.forEach(({keys, icon, label, special}) => {
-    const v = getField(p, ...keys);
-    keys.forEach(k => usedKeys.add(k));
-    if (!v) return;
-    if (special === 'ac') {
-      rows.push(`
-    <div class="popup-row">
-      <span class="popup-icon">${icon}</span>
-      <div><span class="popup-label">${label}</span><br>${acBadge(v)}</div>
-    </div>`);
-    } else if (label === 'Wi-Fi' && v.toUpperCase() === 'NO') {
-      return; // nasconde Wi-Fi: NO
-    } else {
-      rows.push(`
-    <div class="popup-row">
-      <span class="popup-icon">${icon}</span>
-      <div><span class="popup-label">${label}</span><br>
-      <span class="popup-val">${v}</span></div>
-    </div>`);
-    }
-  });
-
-  // Campi extra non in lista (qualsiasi campo non nullo non ancora mostrato)
-  Object.keys(p).forEach(key => {
-    if (usedKeys.has(key)) return;
-    if (key.startsWith('FIELD_')) return; // ignora campi vuoti generati da QGIS
-    const v = val(p[key]);
-    if (!v) return;
-    rows.push(`
-    <div class="popup-row">
-      <span class="popup-icon">ℹ️</span>
-      <div><span class="popup-label">${key}</span><br>
-      <span class="popup-val">${v}</span></div>
-    </div>`);
-  });
-
-  // Telefono
-  const telefono = getField(p, 'Telefono', 'TELEFONO');
-  if (telefono) {
-    rows.push(`
-    <div class="popup-row">
-      <span class="popup-icon">📞</span>
-      <div><span class="popup-label">Telefono</span><br>
-      <span class="popup-val"><a href="tel:${telefono}" class="popup-link">${telefono}</a></span></div>
-    </div>`);
-  }
-
-  // Footer link
-  const footer = [];
-  const googleMaps = getField(p, 'GoogleMaps', 'GOOGLEMAPS');
-  const sitoWeb = getField(p, 'Sito_Web', 'SITO_WEB');
-  if (googleMaps) footer.push(`<a href="${googleMaps}" target="_blank" class="popup-link">📍 Google Maps</a>`);
-  if (sitoWeb)     footer.push(`<a href="${sitoWeb}" target="_blank" class="popup-link">🌐 Sito web</a>`);
-  const email = getField(p, 'Email', 'EMAIL') || getField(p, 'Email2', 'EMAIL2');
-  if (email) footer.push(`<a href="mailto:${email}" class="popup-link">✉️ Email</a>`);
-
-  return `
-    <div class="popup-header">
-      <div class="popup-tipo">${titoloTipo}</div>
-      <div class="popup-nome">${titoloNome}</div>
-    </div>
-    <div class="popup-body">${rows.join('')}</div>
-    ${footer.length ? `<div class="popup-footer">${footer.join('')}</div>` : ''}
-  `;
-}
-
-// Popup semplificato per layer con pochi campi (fontanelle, casette acqua)
-function buildSimplePopup(p, categoryLabel, titleFieldKeys) {
-  const title = getField(p, ...titleFieldKeys) || categoryLabel;
-  const googleMaps = getField(p, 'GoogleMaps', 'GOOGLEMAPS');
-  const footer = googleMaps
-    ? `<div class="popup-footer"><a href="${googleMaps}" target="_blank" class="popup-link">📍 Google Maps</a></div>`
-    : '';
-  return `
-    <div class="popup-header">
-      <div class="popup-tipo">${categoryLabel}</div>
-      <div class="popup-nome">${title}</div>
-    </div>
-    ${footer}
-  `;
-}
-
-// Layer con icona piccola (punti, senza emoji)
-const SMALL_LAYERS = { fontanelle: 8, casette_acqua: 12 };
-
-// Cache icone: una per tipo, non una per marker
-const ICON_CACHE = {};
-function getCachedIcon(key, factoryFn) {
-  if (!ICON_CACHE[key]) ICON_CACHE[key] = factoryFn();
-  return ICON_CACHE[key];
-}
-
-// ── CARICAMENTO GEOJSON (layer semplici) ──────────────────────────
-async function loadLayer(id) {
-  const cfg = LAYER_CONFIG[id];
+// ── AREA INTERVENTO ────────────────────────────────────────────────
+async function loadAreaIntervento() {
   const group = L.layerGroup();
-  const smallSize = SMALL_LAYERS[id];
-  const circleCfg = CIRCLE_ICONS[id];
-  const icon = getCachedIcon(id, () =>
-    smallSize ? makeSmallIcon(cfg.color, smallSize) : (circleCfg ? makeCircleIcon(circleCfg.color, circleCfg.img) : makeIcon(cfg))
-  );
-
   try {
-    const resp = await fetch(cfg.file);
-    if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
-    const data = await resp.json();
-
-    let count = 0;
-    data.features.forEach(f => {
-      const p = f.properties || {};
-      let lat, lon;
-
-      const latField = getField(p, 'lat', 'LAT');
-      const lonField = getField(p, 'lon', 'LON');
-      if (latField && lonField) {
-        lat = parseFloat(latField);
-        lon = parseFloat(lonField);
-      } else if (f.geometry && f.geometry.type === 'Point') {
-        lon = f.geometry.coordinates[0];
-        lat = f.geometry.coordinates[1];
-      } else if (f.geometry && f.geometry.type === 'Polygon') {
-        const coords = f.geometry.coordinates[0];
-        lat = coords.reduce((s,c) => s + c[1], 0) / coords.length;
-        lon = coords.reduce((s,c) => s + c[0], 0) / coords.length;
-      }
-
-      if (!lat || !lon || isNaN(lat) || isNaN(lon)) return;
-
-      const markerPane = (id === 'fontanelle' || id === 'casette_acqua') ? 'infra' : 'marcatori';
-      let popupHtml;
-      if (id === 'fontanelle') {
-        popupHtml = buildSimplePopup(p, 'Fontanelle', ['d_tipo', 'D_TIPO', 'Tipo', 'TIPO']);
-      } else if (id === 'casette_acqua') {
-        popupHtml = buildSimplePopup(p, "Casette dell'acqua", ['DENOM', 'Denom', 'Nome', 'NOME']);
-      } else {
-        popupHtml = buildPopup(p);
-      }
-      const marker = L.marker([lat, lon], { icon, pane: markerPane })
-        .bindPopup(popupHtml, { maxWidth: 320 });
-      group.addLayer(marker);
-      count++;
-    });
-
-    document.getElementById(`count-${id}`).textContent = count;
-  } catch (e) {
-    document.getElementById(`count-${id}`).textContent = '–';
-    document.getElementById(`count-${id}`).title = 'File GeoJSON non trovato: ' + cfg.file;
-    console.warn(`Layer "${id}" non caricato:`, e.message);
-  }
-
-  layers[id] = group;
-  loaded[id]  = true;
-  group.addTo(map);
-}
-
-// ── CARICAMENTO LAYER AL CHIUSO (file unico, marker per Tipo) ─────
-async function loadRifugiChiuso() {
-  try {
-    const resp = await fetch('rifugi_chiuso.geojson');
-    if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
-    const data = await resp.json();
-
-    let total = 0;
-    data.features.forEach(f => {
-      const p = f.properties || {};
-      let lat, lon;
-
-      const latField2 = getField(p, 'lat', 'LAT');
-      const lonField2 = getField(p, 'lon', 'LON');
-      if (latField2 && lonField2) {
-        lat = parseFloat(latField2);
-        lon = parseFloat(lonField2);
-      } else if (f.geometry && f.geometry.type === 'Point') {
-        lon = f.geometry.coordinates[0];
-        lat = f.geometry.coordinates[1];
-      }
-
-      if (!lat || !lon || isNaN(lat) || isNaN(lon)) return;
-
-      const tipo = getField(p, 'Tipo', 'TIPO') || '';
-      const icon = getCachedIcon('chiuso_' + tipo, () => {
-        const cfg = CIRCLE_ICONS[tipo];
-        return cfg ? makeCircleIcon(cfg.color, cfg.img, 40) : makeIcon({color: '#3A7CA5'});
-      });
-
-      const marker = L.marker([lat, lon], { icon, pane: 'marcatori' })
-        .bindPopup(buildPopup(p), { maxWidth: 320 });
-
-      if (!markersByTipo[tipo]) markersByTipo[tipo] = [];
-      markersByTipo[tipo].push(marker);
-      gruppoChiuso.addLayer(marker);
-      total++;
-    });
-
-    document.getElementById('count-gruppo-chiuso').textContent = total;
-
-    Object.entries(markersByTipo).forEach(([tipo, markers]) => {
-      const el = document.getElementById('lcount-' + tipo);
-      if (el) el.textContent = markers.length;
-    });
-
-  } catch (e) {
-    document.getElementById('count-gruppo-chiuso').textContent = '–';
-    console.warn('Layer rifugi_chiuso non caricato:', e.message);
-  }
-
-}
-
-// ── TOGGLE LAYER SEMPLICI ─────────────────────────────────────────
-function toggleLayer(id, checkbox) {
-  const row = document.getElementById('row-' + id);
-  if (checkbox.checked) {
-    if (layers[id]) map.addLayer(layers[id]);
-    if (row) row.classList.add('active');
-  } else {
-    if (layers[id]) map.removeLayer(layers[id]);
-    if (row) row.classList.remove('active');
-  }
-}
-
-// ── TOGGLE GRUPPO AL CHIUSO ───────────────────────────────────────
-const TIPI_CHIUSO = [
-  { tipo: 'Aule Studio',                    togId: 'tog-tipo-AuleStudio',      rowId: 'row-tipo-AuleStudio' },
-  { tipo: 'Biblioteche',                    togId: 'tog-tipo-Biblioteche',     rowId: 'row-tipo-Biblioteche' },
-  { tipo: 'Centri Anziani (CSAQ)',           togId: 'tog-tipo-CentriAnziani',   rowId: 'row-tipo-CentriAnziani' },
-  { tipo: 'Musei Gratuiti Residenti',       togId: 'tog-tipo-Musei',           rowId: 'row-tipo-Musei' },
-  { tipo: 'Centri Culturali e Poli Civici', togId: 'tog-tipo-CentriCulturali', rowId: 'row-tipo-CentriCulturali' },
-];
-
-function toggleGruppo(checkbox) {
-  const acceso = checkbox.checked;
-  TIPI_CHIUSO.forEach(({ tipo, togId, rowId }) => {
-    if (markersByTipo[tipo]) {
-      markersByTipo[tipo].forEach(m => acceso ? gruppoChiuso.addLayer(m) : gruppoChiuso.removeLayer(m));
-    }
-    const tog = document.getElementById(togId);
-    const row = document.getElementById(rowId);
-    if (tog) tog.checked = acceso;
-    if (row) acceso ? row.classList.add('active') : row.classList.remove('active');
-  });
-}
-
-// ── TOGGLE SINGOLO SOTTOTIPO ──────────────────────────────────────
-function toggleTipo(tipo, checkbox) {
-  const acceso = checkbox.checked;
-  const cfg = TIPI_CHIUSO.find(t => t.tipo === tipo);
-  if (markersByTipo[tipo]) {
-    markersByTipo[tipo].forEach(m => acceso ? gruppoChiuso.addLayer(m) : gruppoChiuso.removeLayer(m));
-  }
-  if (cfg) {
-    const row = document.getElementById(cfg.rowId);
-    if (row) acceso ? row.classList.add('active') : row.classList.remove('active');
-  }
-  // sincronizza toggle gruppo
-  const togGruppo = document.getElementById('tog-rifugi_chiuso');
-  if (togGruppo) {
-    const tuttiSpenti = TIPI_CHIUSO.every(({ togId }) => {
-      const el = document.getElementById(togId);
-      return el && !el.checked;
-    });
-    togGruppo.checked = !tuttiSpenti;
-  }
-}
-
-// ── LAYER POLIGONALI COROPLETA ───────────────────────────────────
-const polyLayers = {};
-
-async function loadPolyLayer(id) {
-  const cfg = POLY_CONFIG[id];
-  const group = L.layerGroup();
-
-  try {
-    const resp = await fetch(cfg.file);
+    const resp = await fetch('areaintervento.geojson');
     if (!resp.ok) throw new Error('HTTP ' + resp.status);
     const data = await resp.json();
-
     let count = 0;
     L.geoJSON(data, {
       pane: 'poligoni',
-      style: function(feature) {
-        const v = feature.properties[cfg.campo];
-        const vNum = (v !== null && v !== undefined) ? parseFloat(v) : NaN;
-        return {
-          fillColor: getYlGnBu(isNaN(vNum) ? null : vNum),
-          fillOpacity: 0.75,
-          color: '#555',
-          weight: 0.5,
-          opacity: 0.6,
-        };
+      style: function(f) {
+        const v = f.properties['layer'];
+        const fillColor = v === '1' ? '#8B0000' : '#E57373';
+        return { fillColor, fillOpacity: 0.65, color: fillColor, weight: 0.5, opacity: 0.8, pane: 'poligoni' };
       },
       onEachFeature: function(feature, layer) {
-        const p = feature.properties;
-        const vRaw = p[cfg.campo];
-        const vNum = parseFloat(vRaw);
-        const vStr = isNaN(vNum) ? 'n.d.' : vNum.toFixed(3);
+        const priorita = feature.properties['layer'] === '1' ? 'Priorità 1' : 'Priorità 2';
         layer.bindPopup(
-          '<div class="popup-header"><div class="popup-tipo">' + cfg.label + '</div>' +
-          '<div class="popup-nome">' + (val(p.Nome) || val(p.name) || val(p.NOME) || val(p.NAME) || cfg.label) + '</div></div>' +
-          '<div class="popup-body"><div class="popup-row"><span class="popup-icon">🌡️</span>' +
-          '<div><span class="popup-label">Indice raffrescamento</span><br>' +
-          '<span class="popup-val">' + vStr + '</span></div></div></div>',
-          { maxWidth: 280 }
+          '<div class="popup-header"><div class="popup-tipo">Area prioritaria intervento caldo</div>' +
+          '<div class="popup-nome">' + priorita + '</div></div>',
+          { maxWidth: 240 }
         );
         count++;
       }
     }).addTo(group);
-
-    const el = document.getElementById('count-' + id);
+    const el = document.getElementById('count-areaintervento');
     if (el) el.textContent = count;
-
   } catch(e) {
-    const el = document.getElementById('count-' + id);
-    if (el) { el.textContent = '–'; el.title = 'File non trovato: ' + cfg.file; }
-    console.warn('Layer ' + id + ' non caricato:', e.message);
+    const el = document.getElementById('count-areaintervento');
+    if (el) el.textContent = '–';
+    console.warn('areaintervento non caricato:', e.message);
   }
-
-  polyLayers[id] = group;
+  allLayers['areaintervento'] = group;
   group.addTo(map);
 }
 
-function togglePolyLayer(id, checkbox) {
-  const row = document.getElementById('row-' + id);
-  if (checkbox.checked) {
-    if (polyLayers[id]) map.addLayer(polyLayers[id]);
-    if (row) row.classList.add('active');
-  } else {
-    if (polyLayers[id]) map.removeLayer(polyLayers[id]);
-    if (row) row.classList.remove('active');
-  }
-}
-
-// ── CONFINI AMMINISTRATIVI ───────────────────────────────────────
-const confineLayers = {};
-
+// ── CONFINI ────────────────────────────────────────────────────────
 const CONFINE_CONFIG = {
-  comune:   { file: 'Comune.geojson',   color: '#111', weight: 0.8, dash: null,  label: 'Comune' },
-  municipi: { file: 'Municipi.geojson', color: '#444', weight: 0.5, dash: '4 3', label: 'Municipio' },
+  comune:   { file: 'Comune.geojson',   color: '#111', weight: 2,   dash: null },
+  municipi: { file: 'Municipi.geojson', color: '#444', weight: 1,   dash: '4 3' },
 };
 
 async function loadConfine(id) {
   const cfg = CONFINE_CONFIG[id];
   const group = L.layerGroup();
-
   try {
     const resp = await fetch(cfg.file);
     if (!resp.ok) throw new Error('HTTP ' + resp.status);
     const data = await resp.json();
-
     let count = 0;
     L.geoJSON(data, {
-      style: {
-        color: cfg.color,
-        weight: cfg.weight,
-        opacity: 0.85,
-        fill: false,
-        dashArray: cfg.dash,
-      },
+      style: { color: cfg.color, weight: cfg.weight, opacity: 0.85, fill: false, dashArray: cfg.dash },
       onEachFeature: function(feature, layer) {
-        const p = feature.properties || {};
-        // etichetta per municipi
         if (id === 'municipi') {
-          const nome = val(p.Nome) || val(p.NOME) || val(p.name) || val(p.NAME) || val(p.municipio) || val(p.MUNICIPIO) || '';
-          if (nome) {
-            layer.bindTooltip(nome, {
-              permanent: true,
-              direction: 'center',
-              className: 'municipio-label',
-            });
-          }
+          const p = feature.properties || {};
+          const nome = p.Nome || p.NOME || p.name || p.NAME || p.municipio || p.MUNICIPIO || '';
+          if (nome) layer.bindTooltip(nome, { permanent: true, direction: 'center', className: 'municipio-label' });
         }
         count++;
       }
     }).addTo(group);
-
     const el = document.getElementById('count-' + id);
     if (el) el.textContent = count;
-
   } catch(e) {
     const el = document.getElementById('count-' + id);
-    if (el) { el.textContent = '–'; el.title = 'File non trovato: ' + cfg.file; }
+    if (el) el.textContent = '–';
     console.warn('Confine ' + id + ' non caricato:', e.message);
   }
-
-  confineLayers[id] = group;
+  allLayers[id] = group;
   group.addTo(map);
 }
 
-function toggleConfine(id, checkbox) {
+// ── TOGGLE ─────────────────────────────────────────────────────────
+function toggleLayer(id, checkbox) {
   const row = document.getElementById('row-' + id);
   if (checkbox.checked) {
-    if (confineLayers[id]) map.addLayer(confineLayers[id]);
+    if (allLayers[id]) map.addLayer(allLayers[id]);
     if (row) row.classList.add('active');
   } else {
-    if (confineLayers[id]) map.removeLayer(confineLayers[id]);
+    if (allLayers[id]) map.removeLayer(allLayers[id]);
     if (row) row.classList.remove('active');
   }
 }
 
-// ── INIT ──────────────────────────────────────────────────────────
+// ── INIT ───────────────────────────────────────────────────────────
 async function init() {
   const promises = [
-    loadBoundary(),
-    loadRifugiChiuso(),
-    ...Object.keys(POLY_CONFIG).map(id => loadPolyLayer(id)),
-    ...Object.keys(LAYER_CONFIG).map(id => loadLayer(id)),
-    ...Object.keys(CONFINE_CONFIG).map(id => loadConfine(id)),
+    loadRaster(),
+    loadAreaIntervento(),
+    loadConfine('comune'),
+    loadConfine('municipi'),
   ];
   await Promise.allSettled(promises);
-
-  // Contatore totale gruppo ALL'APERTO
-  const idsAperto = ['parchi_pubblici', 'parchi_affaccio', 'spiagge'];
-  let totAperto = 0;
-  idsAperto.forEach(id => {
-    const el = document.getElementById('count-' + id);
-    if (el) { const n = parseInt(el.textContent); if (!isNaN(n)) totAperto += n; }
-  });
-  const elAperto = document.getElementById('count-gruppo-aperto');
-  if (elAperto) elAperto.textContent = totAperto > 0 ? totAperto : '–';
-
-  // Contatore totale gruppo SFD
-  const elSfd = document.getElementById('count-sfd');
-  const elGruppoSfd = document.getElementById('count-gruppo-sfd');
-  if (elGruppoSfd && elSfd) {
-    const n = parseInt(elSfd.textContent);
-    elGruppoSfd.textContent = !isNaN(n) ? n : '–';
-  }
-
-  // Contatore totale gruppo INFRASTRUTTURE
-  const idsInfra = ['casette_acqua', 'fontanelle', 'piscine'];
-  let totInfra = 0;
-  idsInfra.forEach(id => {
-    const el = document.getElementById('count-' + id);
-    if (el) { const n = parseInt(el.textContent); if (!isNaN(n)) totInfra += n; }
-  });
-  const elInfra = document.getElementById('count-gruppo-infra');
-  if (elInfra) elInfra.textContent = totInfra > 0 ? totInfra : '–';
-
   document.getElementById('loading').style.display = 'none';
 }
 
