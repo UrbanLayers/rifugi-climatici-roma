@@ -8,6 +8,8 @@
 <!-- Leaflet -->
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css"/>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+<script src="https://unpkg.com/georaster"></script>
+<script src="https://unpkg.com/georaster-layer-for-leaflet/dist/georaster-layer-for-leaflet.min.js"></script>
 
 
 
@@ -643,6 +645,61 @@
           <span class="toggle-track"></span>
         </span>
       </label>
+    </div>
+
+    <!-- MAPPE TEMATICHE -->
+    <div class="sidebar-section">
+      <div class="cat-header">Mappe tematiche</div>
+
+      <label class="layer-row" id="row-heat">
+        <span class="layer-icon" style="padding:0;overflow:hidden;border-radius:6px;">
+          <svg viewBox="0 0 26 26" xmlns="http://www.w3.org/2000/svg" width="26" height="26">
+            <defs>
+              <linearGradient id="spectral-heat" x1="0" y1="0" x2="1" y2="0">
+                <stop offset="0%" stop-color="#5e4fa2"/>
+                <stop offset="10%" stop-color="#3288bd"/>
+                <stop offset="20%" stop-color="#66c2a5"/>
+                <stop offset="30%" stop-color="#abdda4"/>
+                <stop offset="40%" stop-color="#e6f598"/>
+                <stop offset="50%" stop-color="#ffffbf"/>
+                <stop offset="60%" stop-color="#fee08b"/>
+                <stop offset="70%" stop-color="#fdae61"/>
+                <stop offset="80%" stop-color="#f46d43"/>
+                <stop offset="90%" stop-color="#d53e4f"/>
+                <stop offset="100%" stop-color="#9e0142"/>
+              </linearGradient>
+            </defs>
+            <rect width="26" height="26" fill="url(#spectral-heat)" rx="6" stroke="#ccc" stroke-width="0.5"/>
+          </svg>
+        </span>
+        <span class="layer-name">Esposizione al calore<br><small style="font-weight:400;color:var(--text-muted);">indice di esposizione</small></span>
+        <span class="layer-count" id="count-heat">off</span>
+        <span class="toggle">
+          <input type="checkbox" id="tog-heat" onchange="toggleHeat(this)">
+          <span class="toggle-track"></span>
+        </span>
+      </label>
+
+      <!-- Legenda Spectral -->
+      <div style="margin:4px 0 10px;">
+        <div style="font-size:10px;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:var(--text-muted);margin-bottom:4px;">Indice di esposizione al calore</div>
+        <div style="display:flex;height:10px;border-radius:3px;overflow:hidden;margin-bottom:3px;">
+          <div style="flex:1;background:#5e4fa2;"></div>
+          <div style="flex:1;background:#3288bd;"></div>
+          <div style="flex:1;background:#66c2a5;"></div>
+          <div style="flex:1;background:#abdda4;"></div>
+          <div style="flex:1;background:#e6f598;"></div>
+          <div style="flex:1;background:#ffffbf;"></div>
+          <div style="flex:1;background:#fee08b;"></div>
+          <div style="flex:1;background:#fdae61;"></div>
+          <div style="flex:1;background:#f46d43;"></div>
+          <div style="flex:1;background:#d53e4f;"></div>
+          <div style="flex:1;background:#9e0142;"></div>
+        </div>
+        <div style="display:flex;justify-content:space-between;font-size:10px;color:var(--text-muted);">
+          <span>0 (bassa)</span><span>1 (alta)</span>
+        </div>
+      </div>
     </div>
 
     <!-- CONFINI -->
@@ -1354,6 +1411,75 @@ function toggleConfine(id, checkbox) {
     if (row) row.classList.add('active');
   } else {
     if (confineLayers[id]) map.removeLayer(confineLayers[id]);
+    if (row) row.classList.remove('active');
+  }
+}
+
+// ── RASTER ESPOSIZIONE AL CALORE (Spectral) ───────────────────────
+const SPECTRAL = ['#5e4fa2','#3288bd','#66c2a5','#abdda4','#e6f598','#ffffbf','#fee08b','#fdae61','#f46d43','#d53e4f','#9e0142'];
+
+function getSpectralColor(v) {
+  if (v === null || v === undefined || isNaN(v) || v < 0) return null;
+  const idx = Math.min(SPECTRAL.length - 1, Math.max(0, Math.floor(v * SPECTRAL.length)));
+  return SPECTRAL[idx];
+}
+
+let heatLayer = null;
+let heatLoading = false;
+let heatLoaded = false;
+
+async function loadHeatExposure() {
+  const countEl = document.getElementById('count-heat');
+  if (heatLoaded) {
+    if (heatLayer) map.addLayer(heatLayer);
+    return;
+  }
+  if (heatLoading) return;
+  heatLoading = true;
+  if (countEl) countEl.textContent = '…';
+
+  try {
+    const resp = await fetch('hm30.tif');
+    if (!resp.ok) throw new Error('HTTP ' + resp.status);
+    const arrayBuffer = await resp.arrayBuffer();
+    const georaster = await parseGeoraster(arrayBuffer);
+
+    heatLayer = new GeoRasterLayer({
+      georaster,
+      opacity: 0.7,
+      resolution: 128,
+      pixelValuesToColorFn: values => {
+        const v = values[0];
+        if (v === null || v === undefined || v < 0) return null;
+        return getSpectralColor(v);
+      },
+    });
+
+    // Aggiunge solo se il toggle è ancora attivo (l'utente potrebbe averlo spento nel frattempo)
+    const tog = document.getElementById('tog-heat');
+    if (tog && tog.checked) heatLayer.addTo(map);
+
+    heatLoaded = true;
+    if (countEl) countEl.textContent = 'ok';
+  } catch (e) {
+    if (countEl) { countEl.textContent = '–'; countEl.title = e.message; }
+    console.warn('Layer esposizione al calore non caricato:', e.message);
+  } finally {
+    heatLoading = false;
+  }
+}
+
+function toggleHeat(checkbox) {
+  const row = document.getElementById('row-heat');
+  if (checkbox.checked) {
+    if (row) row.classList.add('active');
+    if (heatLoaded) {
+      if (heatLayer) map.addLayer(heatLayer);
+    } else {
+      loadHeatExposure(); // primo caricamento, lazy
+    }
+  } else {
+    if (heatLayer) map.removeLayer(heatLayer);
     if (row) row.classList.remove('active');
   }
 }
