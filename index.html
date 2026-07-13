@@ -706,13 +706,17 @@
           <svg viewBox="0 0 26 26" xmlns="http://www.w3.org/2000/svg" width="26" height="26">
             <defs>
               <linearGradient id="spectral-vuln" x1="0" y1="0" x2="1" y2="0">
-                <stop offset="0%" stop-color="#4575b4"/>
-                <stop offset="16%" stop-color="#91bfdb"/>
-                <stop offset="33%" stop-color="#e0f3f8"/>
+                <stop offset="0%" stop-color="#5e4fa2"/>
+                <stop offset="10%" stop-color="#3288bd"/>
+                <stop offset="20%" stop-color="#66c2a5"/>
+                <stop offset="30%" stop-color="#abdda4"/>
+                <stop offset="40%" stop-color="#e6f598"/>
                 <stop offset="50%" stop-color="#ffffbf"/>
-                <stop offset="66%" stop-color="#fee090"/>
-                <stop offset="83%" stop-color="#fc8d59"/>
-                <stop offset="100%" stop-color="#d73027"/>
+                <stop offset="60%" stop-color="#fee08b"/>
+                <stop offset="70%" stop-color="#fdae61"/>
+                <stop offset="80%" stop-color="#f46d43"/>
+                <stop offset="90%" stop-color="#d53e4f"/>
+                <stop offset="100%" stop-color="#9e0142"/>
               </linearGradient>
             </defs>
             <rect width="26" height="26" fill="url(#spectral-vuln)" rx="6" stroke="#ccc" stroke-width="0.5"/>
@@ -726,17 +730,21 @@
         </span>
       </label>
 
-      <!-- Legenda vulnerabilità (7 classi a quantili) -->
+      <!-- Legenda vulnerabilità (11 classi a quantili) -->
       <div style="margin:4px 0 10px;">
         <div style="font-size:10px;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:var(--text-muted);margin-bottom:4px;">Indice di vulnerabilità</div>
         <div style="display:flex;height:10px;border-radius:3px;overflow:hidden;margin-bottom:3px;">
-          <div style="flex:1;background:#4575b4;"></div>
-          <div style="flex:1;background:#91bfdb;"></div>
-          <div style="flex:1;background:#e0f3f8;"></div>
+          <div style="flex:1;background:#5e4fa2;"></div>
+          <div style="flex:1;background:#3288bd;"></div>
+          <div style="flex:1;background:#66c2a5;"></div>
+          <div style="flex:1;background:#abdda4;"></div>
+          <div style="flex:1;background:#e6f598;"></div>
           <div style="flex:1;background:#ffffbf;"></div>
-          <div style="flex:1;background:#fee090;"></div>
-          <div style="flex:1;background:#fc8d59;"></div>
-          <div style="flex:1;background:#d73027;"></div>
+          <div style="flex:1;background:#fee08b;"></div>
+          <div style="flex:1;background:#fdae61;"></div>
+          <div style="flex:1;background:#f46d43;"></div>
+          <div style="flex:1;background:#d53e4f;"></div>
+          <div style="flex:1;background:#9e0142;"></div>
         </div>
         <div style="display:flex;justify-content:space-between;font-size:10px;color:var(--text-muted);">
           <span>bassa</span><span>alta</span>
@@ -1468,10 +1476,9 @@ function getHeatColor(v) {
   return SPECTRAL_BASE[SPECTRAL_BASE.length - 1 - idxRev];
 }
 
-// Vulnerabilità: classificazione a 7 classi (quantili calcolati sul campo VULNuihNOR)
-// Breakpoints: 0, 0.167, 0.202, 0.231, 0.258, 0.288, 0.327, max
-const VULN_BREAKS = [0, 0.167, 0.202, 0.231, 0.258, 0.288, 0.327];
-const VULN_COLORS = ['#4575b4', '#91bfdb', '#e0f3f8', '#ffffbf', '#fee090', '#fc8d59', '#d73027'];
+// Vulnerabilità: classificazione a 11 classi (quantili calcolati in QGIS sul campo VULNuihNOR)
+const VULN_BREAKS = [0, 0.111, 0.162, 0.188, 0.209, 0.229, 0.247, 0.267, 0.287, 0.312, 0.344];
+const VULN_COLORS = ['#5e4fa2','#3288bd','#66c2a5','#abdda4','#e6f598','#ffffbf','#fee08b','#fdae61','#f46d43','#d53e4f','#9e0142'];
 
 function getVulnColor(v) {
   if (v === null || v === undefined || isNaN(v)) return null;
