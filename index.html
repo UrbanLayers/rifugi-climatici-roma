@@ -700,8 +700,8 @@ const LAYER_CONFIG = {
 
 // Layer poligonali con coropleta
 const POLY_CONFIG = {
-  parchi_pubblici: { file: 'ParchiPubblici.geojson', campo: '_mean',  label: 'Parchi Pubblici' },
-  parchi_affaccio: { file: 'ParchiAffaccio.geojson', campo: '1mean',  label: "Parchi di Affaccio" },
+  parchi_pubblici: { file: 'ParchiPubblici.geojson', campo: 'INDICE',  label: 'Parchi Pubblici' },
+  parchi_affaccio: { file: 'ParchiAffaccio.geojson', campo: 'INDICE',  label: "Parchi di Affaccio" },
 };
 
 // Colori e icone per sottotipi del layer Al chiuso
@@ -880,6 +880,17 @@ function val(v) {
   return (v && String(v).trim() !== '' && v !== 'null' && v !== 'undefined') ? String(v).trim() : null;
 }
 
+// Legge un campo da un oggetto properties provando più varianti di maiuscole/minuscole
+function getField(p, ...names) {
+  for (const name of names) {
+    if (p[name] !== undefined && p[name] !== null) {
+      const v = val(p[name]);
+      if (v) return v;
+    }
+  }
+  return null;
+}
+
 function acBadge(v) {
   const s = val(v);
   if (!s) return '<span class="badge-ac badge-nd">n.d.</span>';
@@ -910,57 +921,70 @@ function buildPopup(p) {
   const rows = [];
 
   // Intestazione con Tipo e Nome
-  const titoloTipo = val(p.Tipo) || 'Rifugio climatico';
-  const titoloNome = val(p.Nome) || '–';
+  const titoloTipo = getField(p, 'Tipo', 'TIPO') || 'Rifugio climatico';
+  const titoloNome = getField(p, 'Nome', 'NOME', 'name', 'NAME') || '–';
 
   // Indirizzo + Municipio insieme
-  if (val(p.Indirizzo)) {
+  if (getField(p, 'Indirizzo', 'INDIRIZZO')) {
     rows.push(`
     <div class="popup-row">
       <span class="popup-icon">📍</span>
       <div><span class="popup-label">Indirizzo</span><br>
-      <span class="popup-val">${val(p.Indirizzo)}${val(p.Municipio) ? ' <span style="color:var(--text-muted)">· Mun. '+val(p.Municipio)+'</span>' : ''}</span></div>
+      <span class="popup-val">${getField(p, 'Indirizzo', 'INDIRIZZO')}${getField(p, 'Municipio', 'MUNICIPIO') ? ' <span style="color:var(--text-muted)">· Mun. '+getField(p, 'Municipio', 'MUNICIPIO')+'</span>' : ''}</span></div>
     </div>`);
-  } else if (val(p.Municipio)) {
+  } else if (getField(p, 'Municipio', 'MUNICIPIO')) {
     rows.push(`
     <div class="popup-row">
       <span class="popup-icon">📍</span>
       <div><span class="popup-label">Municipio</span><br>
-      <span class="popup-val">${val(p.Municipio)}</span></div>
+      <span class="popup-val">${getField(p, 'Municipio', 'MUNICIPIO')}</span></div>
     </div>`);
   }
 
-  // Tutti gli altri campi in ordine
-  const skipKeys = new Set(['Tipo','Nome','Indirizzo','Municipio','lat','lon','GoogleMaps','Sito_Web','Email','Email2','Telefono']);
-  const orderedKeys = ['Orari','Chiusura_estiva','Aria_cond','Accessibilita','Wifi','Sedute_dentro','Sedute_fuori','Servizi_aggiuntivi','Proprieta'];
-  const iconMap = { Orari:'🕐', Chiusura_estiva:'📅', Aria_cond:'❄️', Accessibilita:'♿', Wifi:'ℹ️', Sedute_dentro:'🪑', Sedute_fuori:'🪑', Servizi_aggiuntivi:'ℹ️', Proprieta:'🏛️' };
-  const labelMap = { Orari:'Orari', Chiusura_estiva:'Chiusura estiva', Aria_cond:'Aria condizionata', Accessibilita:'Accessibilità', Wifi:'Wi-Fi', Sedute_dentro:'Sedute interne', Sedute_fuori:'Sedute esterne', Servizi_aggiuntivi:'Servizi aggiuntivi', Proprieta:'Proprietà' };
+  // Tutti gli altri campi in ordine, con varianti di nome campo (shapefile tronca a 10 caratteri e maiuscolo)
+  // ordinati: [chiave1, chiave2, ...] -> prima variante trovata vince
+  const orderedFields = [
+    { keys: ['Orari', 'ORARI'],                           icon: '🕐', label: 'Orari' },
+    { keys: ['Chiusura_estiva', 'CHIUSURA_E', 'CHIUSURA_ESTIVA'], icon: '📅', label: 'Chiusura estiva' },
+    { keys: ['Aria_cond', 'ARIA_COND'],                    icon: '❄️', label: 'Aria condizionata', special: 'ac' },
+    { keys: ['Accessibilita', 'ACCESSIBIL', 'ACCESSIBILITA'], icon: '♿', label: 'Accessibilità' },
+    { keys: ['Wifi', 'WIFI'],                              icon: 'ℹ️', label: 'Wi-Fi' },
+    { keys: ['Sedute_dentro', 'SEDUTE_DEN'],               icon: '🪑', label: 'Sedute interne' },
+    { keys: ['Sedute_fuori', 'SEDUTE_FUO'],                icon: '🪑', label: 'Sedute esterne' },
+    { keys: ['Servizi_aggiuntivi', 'SERVIZI_AG'],          icon: 'ℹ️', label: 'Servizi aggiuntivi' },
+    { keys: ['Proprieta', 'PROPRIETA'],                    icon: '🏛️', label: 'Proprietà' },
+  ];
 
-  orderedKeys.forEach(key => {
-    const v = val(p[key]);
+  const usedKeys = new Set(['Tipo','TIPO','Nome','NOME','Indirizzo','INDIRIZZO','Municipio','MUNICIPIO',
+    'lat','LAT','lon','LON','GoogleMaps','GOOGLEMAPS','Sito_Web','SITO_WEB','Email','EMAIL','Email2','EMAIL2',
+    'Telefono','TELEFONO','fid','FID']);
+
+  orderedFields.forEach(({keys, icon, label, special}) => {
+    const v = getField(p, ...keys);
+    keys.forEach(k => usedKeys.add(k));
     if (!v) return;
-    if (key === 'Aria_cond') {
+    if (special === 'ac') {
       rows.push(`
     <div class="popup-row">
-      <span class="popup-icon">${iconMap[key]}</span>
-      <div><span class="popup-label">${labelMap[key]}</span><br>${acBadge(v)}</div>
+      <span class="popup-icon">${icon}</span>
+      <div><span class="popup-label">${label}</span><br>${acBadge(v)}</div>
     </div>`);
-    } else if (key === 'Wifi' && v.toUpperCase() === 'NO') {
+    } else if (label === 'Wi-Fi' && v.toUpperCase() === 'NO') {
       return; // nasconde Wi-Fi: NO
     } else {
       rows.push(`
     <div class="popup-row">
-      <span class="popup-icon">${iconMap[key]}</span>
-      <div><span class="popup-label">${labelMap[key]}</span><br>
+      <span class="popup-icon">${icon}</span>
+      <div><span class="popup-label">${label}</span><br>
       <span class="popup-val">${v}</span></div>
     </div>`);
     }
   });
 
   // Campi extra non in lista (qualsiasi campo non nullo non ancora mostrato)
-  const shownKeys = new Set([...skipKeys, ...orderedKeys]);
   Object.keys(p).forEach(key => {
-    if (shownKeys.has(key)) return;
+    if (usedKeys.has(key)) return;
+    if (key.startsWith('FIELD_')) return; // ignora campi vuoti generati da QGIS
     const v = val(p[key]);
     if (!v) return;
     rows.push(`
@@ -972,20 +996,23 @@ function buildPopup(p) {
   });
 
   // Telefono
-  if (val(p.Telefono)) {
+  const telefono = getField(p, 'Telefono', 'TELEFONO');
+  if (telefono) {
     rows.push(`
     <div class="popup-row">
       <span class="popup-icon">📞</span>
       <div><span class="popup-label">Telefono</span><br>
-      <span class="popup-val"><a href="tel:${val(p.Telefono)}" class="popup-link">${val(p.Telefono)}</a></span></div>
+      <span class="popup-val"><a href="tel:${telefono}" class="popup-link">${telefono}</a></span></div>
     </div>`);
   }
 
   // Footer link
   const footer = [];
-  if (val(p.GoogleMaps)) footer.push(`<a href="${val(p.GoogleMaps)}" target="_blank" class="popup-link">📍 Google Maps</a>`);
-  if (val(p.Sito_Web))   footer.push(`<a href="${val(p.Sito_Web)}" target="_blank" class="popup-link">🌐 Sito web</a>`);
-  const email = val(p.Email) || val(p.Email2);
+  const googleMaps = getField(p, 'GoogleMaps', 'GOOGLEMAPS');
+  const sitoWeb = getField(p, 'Sito_Web', 'SITO_WEB');
+  if (googleMaps) footer.push(`<a href="${googleMaps}" target="_blank" class="popup-link">📍 Google Maps</a>`);
+  if (sitoWeb)     footer.push(`<a href="${sitoWeb}" target="_blank" class="popup-link">🌐 Sito web</a>`);
+  const email = getField(p, 'Email', 'EMAIL') || getField(p, 'Email2', 'EMAIL2');
   if (email) footer.push(`<a href="mailto:${email}" class="popup-link">✉️ Email</a>`);
 
   return `
@@ -1028,9 +1055,11 @@ async function loadLayer(id) {
       const p = f.properties || {};
       let lat, lon;
 
-      if (val(p.lat) && val(p.lon)) {
-        lat = parseFloat(p.lat);
-        lon = parseFloat(p.lon);
+      const latField = getField(p, 'lat', 'LAT');
+      const lonField = getField(p, 'lon', 'LON');
+      if (latField && lonField) {
+        lat = parseFloat(latField);
+        lon = parseFloat(lonField);
       } else if (f.geometry && f.geometry.type === 'Point') {
         lon = f.geometry.coordinates[0];
         lat = f.geometry.coordinates[1];
@@ -1073,9 +1102,11 @@ async function loadRifugiChiuso() {
       const p = f.properties || {};
       let lat, lon;
 
-      if (val(p.lat) && val(p.lon)) {
-        lat = parseFloat(p.lat);
-        lon = parseFloat(p.lon);
+      const latField2 = getField(p, 'lat', 'LAT');
+      const lonField2 = getField(p, 'lon', 'LON');
+      if (latField2 && lonField2) {
+        lat = parseFloat(latField2);
+        lon = parseFloat(lonField2);
       } else if (f.geometry && f.geometry.type === 'Point') {
         lon = f.geometry.coordinates[0];
         lat = f.geometry.coordinates[1];
@@ -1083,7 +1114,7 @@ async function loadRifugiChiuso() {
 
       if (!lat || !lon || isNaN(lat) || isNaN(lon)) return;
 
-      const tipo = val(p.Tipo) || '';
+      const tipo = getField(p, 'Tipo', 'TIPO') || '';
       const icon = getCachedIcon('chiuso_' + tipo, () => {
         const cfg = CIRCLE_ICONS[tipo];
         return cfg ? makeCircleIcon(cfg.color, cfg.img, 40) : makeIcon({color: '#3A7CA5'});
@@ -1201,7 +1232,7 @@ async function loadPolyLayer(id) {
         const vStr = isNaN(vNum) ? 'n.d.' : vNum.toFixed(3);
         layer.bindPopup(
           '<div class="popup-header"><div class="popup-tipo">' + cfg.label + '</div>' +
-          '<div class="popup-nome">' + (val(p.Nome) || val(p.name) || val(p.NOME) || cfg.label) + '</div></div>' +
+          '<div class="popup-nome">' + (val(p.Nome) || val(p.name) || val(p.NOME) || val(p.NAME) || cfg.label) + '</div></div>' +
           '<div class="popup-body"><div class="popup-row"><span class="popup-icon">🌡️</span>' +
           '<div><span class="popup-label">Indice raffrescamento</span><br>' +
           '<span class="popup-val">' + vStr + '</span></div></div></div>',
