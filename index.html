@@ -84,9 +84,10 @@
     display: flex;
     align-items: center;
     gap: 12px;
+    margin-left: auto;
   }
   .header-loghi img {
-    height: 34px;
+    height: 46px;
     width: auto;
     display: block;
   }
@@ -486,7 +487,6 @@
 <header>
   <span class="header-badge">Piano Caldo</span>
   <h1><strong>RI-CLIMA</strong> <span class="header-name-sub">Rete di Rifugi Climatici di Roma Capitale</span></h1>
-  <span class="header-sub">Roma Capitale · Ufficio Clima</span>
   <span class="header-loghi">
     <img src="loghi/ufficio-clima.png" alt="Ufficio Clima" onerror="this.style.display='none'">
   </span>
@@ -853,7 +853,7 @@
     <div class="info-panel__body">
       <p>RI-CLIMA è <strong>la prima rete dei rifugi climatici di Roma Capitale</strong>, parte del Piano Caldo dell'Ufficio Clima del Gabinetto del Sindaco. I rifugi climatici sono spazi pubblici e gratuiti, raggiungibili a piedi, dove ripararsi dal caldo. La rete comprende rifugi al chiuso climatizzati, rifugi all'aperto, strutture per persone senza dimora e infrastrutture per l'accesso all'acqua.</p>
       <p><strong>Clicca su un punto</strong> per vedere tipo, indirizzo, orari, accessibilità e presenza di aria condizionata, e aprire il percorso su Google Maps. I rifugi all'aperto sono classificati per indice di raffrescamento.</p>
-      <p>Due mappe tematiche mostrano inoltre le zone con maggiore esposizione al calore e vulnerabilità sociale al calore. Queste mappe ci permettono di garantire equità nell'accesso ai rifugi e di dare priorità ai nuovi interventi dove sono più necessari. La rete viene aggiornata periodicamente.</p>
+      <p>Due <strong>mappe tematiche</strong> mostrano inoltre le zone più esposte al caldo estremo e con maggiore vulnerabilità socio-demografica al calore. Queste mappe ci permettono di perseguire l'<strong>equità nell'accesso ai rifugi</strong> e di concentrare i nuovi interventi dove sono più necessari. La rete viene aggiornata periodicamente.</p>
       <p class="info-panel__cta">Hai uno spazio da proporre come rifugio climatico? L'adesione è aperta a soggetti non comunali: associazioni di quartiere, centri culturali, terzo settore, luoghi di culto. <a href="https://docs.google.com/forms/d/e/1FAIpQLSeOD5t4tXDsaBuL0uVgrZ2b9E5cx-olpccmwvPF2s5gHxF1cg/viewform" target="_blank" rel="noopener">Compila il form di candidatura</a>.</p>
       <div class="info-panel__footer">
         <a href="https://www.romaperilclima.it/il-piano-caldo-di-roma-capitale/" target="_blank" rel="noopener">Piano Caldo di Roma Capitale</a><br>
@@ -1109,7 +1109,7 @@ function buildPopup(p, categoryOverride) {
     <div class="popup-row">
       <span class="popup-icon">📍</span>
       <div><span class="popup-label">Indirizzo</span><br>
-      <span class="popup-val">${getField(p, 'Indirizzo', 'INDIRIZZO')}${getField(p, 'Municipio', 'MUNICIPIO') ? ' <span style="color:var(--text-muted)">· Mun. '+getField(p, 'Municipio', 'MUNICIPIO')+'</span>' : ''}</span></div>
+      <span class="popup-val">${getField(p, 'Indirizzo', 'INDIRIZZO')}${getField(p, 'Municipio', 'MUNICIPIO') ? ', <span style="color:var(--text-muted)">Mun. '+getField(p, 'Municipio', 'MUNICIPIO')+'</span>' : ''}</span></div>
     </div>`);
   } else if (getField(p, 'Municipio', 'MUNICIPIO')) {
     rows.push(`
