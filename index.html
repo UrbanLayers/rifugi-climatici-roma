@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Rifugi Climatici – Roma Capitale</title>
+<title>RI-CLIMA · Rete di Rifugi Climatici di Roma Capitale</title>
 
 <!-- Leaflet -->
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css"/>
@@ -85,6 +85,7 @@
     display: flex;
     flex: 1;
     overflow: hidden;
+    position: relative;
   }
 
   /* ── SIDEBAR ─────────────────────────────────────────────────── */
@@ -421,6 +422,46 @@
       max-height: 40vh; border-right: none; border-top: 1px solid var(--border); }
     #map { height: 60vh; }
   }
+
+  /* ── NOME NELL'HEADER ─────────────────────────────────────────── */
+  .header-name-sub { font-weight: 400; color: var(--text-muted); font-size: 13px; }
+
+  /* ── PANNELLO INFO PROGETTO ───────────────────────────────────── */
+  .info-panel {
+    position: absolute; top: 12px; right: 12px; z-index: 600;
+    width: 320px; max-width: calc(100% - 24px); max-height: calc(100% - 24px);
+    background: var(--panel); border: 1px solid var(--border);
+    border-radius: 8px; box-shadow: 0 2px 12px rgba(0,0,0,0.12);
+    display: flex; flex-direction: column; overflow: hidden;
+    font-size: 13px; line-height: 1.45; color: var(--text);
+  }
+  .info-panel__toggle {
+    border: none; background: var(--panel);
+    display: flex; align-items: center; justify-content: space-between; gap: 10px;
+    padding: 10px 14px; font-size: 11px; font-weight: 700;
+    letter-spacing: 0.06em; text-transform: uppercase;
+    color: var(--accent); cursor: pointer; flex-shrink: 0; width: 100%;
+  }
+  .info-panel__toggle .x { font-size: 15px; line-height: 1; }
+  .info-panel.collapsed { width: auto; }
+  .info-panel__body { padding: 0 14px 14px; overflow-y: auto; }
+  .info-panel__body p { margin-bottom: 10px; }
+  .info-panel__cta {
+    padding: 10px 12px; background: var(--bg);
+    border-left: 3px solid var(--accent); border-radius: 4px;
+  }
+  .info-panel__footer {
+    margin-top: 10px; padding-top: 10px;
+    border-top: 1px solid var(--border);
+    font-size: 11px; color: var(--text-muted); line-height: 1.5;
+  }
+  .info-panel a { color: var(--accent); text-decoration: none; font-weight: 500; }
+  .info-panel a:hover { text-decoration: underline; }
+  .info-panel.collapsed .info-panel__body { display: none; }
+  @media (max-width: 600px) {
+    .info-panel { top: 8px; right: 8px; max-width: calc(100% - 16px); }
+    .info-panel:not(.collapsed) .info-panel__body { max-height: 38vh; }
+  }
 </style>
 </head>
 <body>
@@ -433,7 +474,7 @@
 <!-- HEADER -->
 <header>
   <span class="header-badge">Piano Caldo</span>
-  <h1>Rifugi Climatici – Ufficio Clima di Roma Capitale</h1>
+  <h1><strong>RI-CLIMA</strong> <span class="header-name-sub">Rete di Rifugi Climatici di Roma Capitale</span></h1>
   <span class="header-sub">Roma Capitale · Ufficio Clima</span>
 </header>
 
@@ -791,6 +832,22 @@
 
   <!-- MAPPA -->
   <div id="map"></div>
+
+  <!-- PANNELLO INFO PROGETTO -->
+  <aside class="info-panel" id="infoPanel">
+    <button class="info-panel__toggle" onclick="toggleInfoPanel()"><span class="label">Info sul progetto</span><span class="x">✕</span></button>
+    <div class="info-panel__body">
+      <p>RI-CLIMA è la rete dei rifugi climatici di Roma Capitale, parte del Piano Caldo dell'Ufficio Clima. I rifugi climatici sono spazi pubblici e gratuiti, raggiungibili a piedi, dove ripararsi dal caldo. La rete comprende rifugi al chiuso climatizzati, rifugi all'aperto, strutture per persone senza dimora e infrastrutture per l'accesso all'acqua.</p>
+      <p>Clicca su un punto per vedere tipo, indirizzo, orari, accessibilità e presenza di aria condizionata, e aprire il percorso su Google Maps. I rifugi all'aperto sono classificati per indice di raffrescamento. Due mappe tematiche mostrano l'esposizione al calore e la vulnerabilità sociale. La rete viene aggiornata nel tempo.</p>
+      <p class="info-panel__cta">Hai uno spazio da proporre come rifugio climatico? L'adesione è aperta a soggetti non comunali: associazioni di quartiere, centri culturali, terzo settore, luoghi di culto. <a href="[URL_FORM_CANDIDATURA]" target="_blank" rel="noopener">Compila il form di candidatura</a>.</p>
+      <div class="info-panel__footer">
+        <a href="https://www.romaperilclima.it/il-piano-caldo-di-roma-capitale/" target="_blank" rel="noopener">Piano Caldo di Roma Capitale</a><br>
+        Dati disponibili anche su <a href="https://geoportale.comune.roma.it/georoma/#/viewer/30812" target="_blank" rel="noopener">GeoRoma</a><br>
+        Ufficio Clima: <a href="mailto:ufficioclima@comune.roma.it">ufficioclima@comune.roma.it</a><br>
+        Referente Tecnico: Ing. Giulia Benati, <a href="mailto:gbenati.urbanlayers@gmail.com">gbenati.urbanlayers@gmail.com</a>
+      </div>
+    </div>
+  </aside>
 
 </div>
 
@@ -1625,6 +1682,14 @@ function toggleVulnerabilita(checkbox) {
     if (vulnLayer) map.removeLayer(vulnLayer);
     if (row) row.classList.remove('active');
   }
+}
+
+// ── PANNELLO INFO ─────────────────────────────────────────────────
+function toggleInfoPanel() {
+  const panel = document.getElementById('infoPanel');
+  const collapsed = panel.classList.toggle('collapsed');
+  panel.querySelector('.info-panel__toggle .label').textContent = collapsed ? 'Info' : 'Info sul progetto';
+  panel.querySelector('.info-panel__toggle .x').textContent = collapsed ? 'ℹ' : '✕';
 }
 
 // ── INIT ──────────────────────────────────────────────────────────
